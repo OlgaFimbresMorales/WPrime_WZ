@@ -5,9 +5,9 @@ import subprocess
 # ========= CONFIGURATION =========
 YAML_FILE = "datasets.yaml"  # Input YAML file with datasets
 JDL_FILE = "condor_submit.jdl"
-X509_PROXY = os.path.expanduser("~/.globus/x509up_u29575")  # Proxy path
+X509_PROXY = os.path.expanduser("~/.globus/x509up_u154847")  # Proxy path
 JOB_SCRIPT = "run_filter.sh"  # Job execution script
-EOS_BASE_DIR = "/eos/user/c/castaned/NanoAOD_Filtered"  # Modify for your EOS path
+EOS_BASE_DIR = "/eos/user/o/olfimbre/NanoAOD_Filtered"  # Modify for your EOS path
 # =================================
 
 
@@ -17,7 +17,7 @@ def get_files_from_das(dataset):
     try:
         output = subprocess.check_output(cmd, shell=True).decode().split()
         if not output:
-            print(f"⚠️ No files found for {dataset}")
+            print(f" No files found for {dataset}")
             return []
         files = [f"root://cms-xrd-global.cern.ch/{f}" for f in output]
         return files
@@ -47,7 +47,7 @@ request_cpus = 1
 request_memory = 2000M
 request_disk = 2GB
 should_transfer_files = YES
-transfer_input_files = filterNanoAOD.py
+transfer_input_files = Example.py
 +JobFlavour = "workday"
 x509userproxy = {X509_PROXY}
 """)

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/afs/cern.ch/user/o/olfimbre/CMSSW_13_3_0/src/DeepNTuples/MyNanoAODTools/scripts/Example.py", line 50, in <module>
+    p.run()
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_13_3_0/src/PhysicsTools/NanoAODTools/python/postprocessing/framework/postprocessor.py", line 143, in run
+    m.beginJob()
+  File "/afs/cern.ch/user/o/olfimbre/CMSSW_13_3_0/src/DeepNTuples/MyNanoAODTools/scripts/Example.py", line 19, in beginJob
+    self.addObject(self.h_vpt)
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_13_3_0/src/PhysicsTools/NanoAODTools/python/postprocessing/framework/eventloop.py", line 44, in addObject
+    self.objs.append(getattr(self, obj.GetName()))
+AttributeError: 'ExampleAnalysis' object has no attribute 'objs'
+xrdcp: no such file or directory processing filteredNanoAOD/*.root

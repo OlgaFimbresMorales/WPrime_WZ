@@ -1,6 +1,5 @@
 universe = vanilla
 executable = run_filter.sh
-arguments = $(inputFile)
 output = logs/job_$(ClusterId)_$(Process).out
 error = logs/job_$(ClusterId)_$(Process).err
 log = logs/job_$(ClusterId)_$(Process).log
@@ -8,8 +7,14 @@ request_cpus = 1
 request_memory = 2000M
 request_disk = 2GB
 should_transfer_files = YES
-when_to_transfer_output = ON_EXIT
-transfer_input_files = filterNanoAOD.py
+transfer_input_files = Example.py
 +JobFlavour = "workday"
-x509userproxy = /afs/cern.ch/user/c/castaned/.globus/x509up_u29575
-queue inputFile from input_files.txt
+x509userproxy = /afs/cern.ch/user/o/olfimbre/.globus/x509up_u154847
+arguments = root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv6/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/120000/5EC07DB0-643F-7641-9D10-F1ABAC6FEF8D.root /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM/filtered_5EC07DB0-643F-7641-9D10-F1ABAC6FEF8D.root
+queue
+arguments = root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv6/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/110000/7B3E3641-AC1B-4340-B3BD-7658EC76019F.root /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM/filtered_7B3E3641-AC1B-4340-B3BD-7658EC76019F.root
+queue
+arguments = root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv6/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/100000/57A4632B-00AF-8648-9CC1-ED96611CC958.root /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM/filtered_57A4632B-00AF-8648-9CC1-ED96611CC958.root
+queue
+arguments = root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv6/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/110000/2D52998F-3CA6-BB4C-AF62-CAAC6830AF09.root /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM/filtered_2D52998F-3CA6-BB4C-AF62-CAAC6830AF09.root
+queue

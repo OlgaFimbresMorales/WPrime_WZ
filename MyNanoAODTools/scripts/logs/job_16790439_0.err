@@ -1,0 +1,13 @@
+Error in <TFile::GetObjectChecked>: The provided key name is invalid.
+Traceback (most recent call last):
+  File "/afs/cern.ch/user/o/olfimbre/CMSSW_13_3_0/src/DeepNTuples/MyNanoAODTools/scripts/Example.py", line 50, in <module>
+    p.run()
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_13_3_0/src/PhysicsTools/NanoAODTools/python/postprocessing/framework/postprocessor.py", line 263, in run
+    m.endJob()
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_13_3_0/src/PhysicsTools/NanoAODTools/python/postprocessing/framework/eventloop.py", line 25, in endJob
+    self.dir.cd()
+TypeError: none of the 2 overloaded methods succeeded. Full details:
+  attempt to access a null-pointer
+  bool TDirectory::cd(const char* path) =>
+    TypeError: takes at least 1 arguments (0 given)
+xrdcp: no such file or directory processing filteredNanoAOD/*.root
