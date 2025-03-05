@@ -16,8 +16,10 @@ ssh username@lxplus.cern.ch
 ```bash
 cmsrel CMSSW_13_3_0
 cd CMSSW_13_3_0/src
-cmsenv
+cmsenv  
 ```
+
+IMPORTANT cmsenv need to be executed every time you open new terminal
 
 ### Step 3. Clone the repository  and compile 
 
@@ -35,6 +37,8 @@ scram b -j 4
 Ensure you have a valid GRID certificate. If you don’t, follow the instructions [here](https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid#ObtainingCert)
 
 Generate the certificate and store it in the .globus directory:
+
+IMPORTANT the command below  need to be executed every time you open new terminal
 
 
 ```bash
@@ -63,21 +67,22 @@ cd MyNanoAODTools/scripts/
 
 ### Step 3: Verify dataset and branch selections
 
-- Check that the datasets to process are listed in datasets.yaml in the correct format. For reference, use the DAS query tool [here](https://cmsweb.cern.ch/das/)  (e.g. /WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18NanoAODv9-106X_upgrade2018_realistic_v16_L1v1-v1/NANOAODSIM)
+- Check input datasets in datasets.yaml. For reference, use the DAS query tool [here](https://cmsweb.cern.ch/das/) 
 
-- Ensure the branchsel.txt file lists the correct branches for the NanoAOD skimmed version to be produced. You can find branch information for original nanoAOD files [here](https://gitlab.cern.ch/cms-nanoAOD/nanoaod-doc/-/wikis/home)
+- Ensure the branchsel.txt file lists the desired branches for the NanoAOD skimmed version to be produced.
+  You can find a list of branches in original file [here](https://gitlab.cern.ch/cms-nanoAOD/nanoaod-doc/-/wikis/home)
 
 
 ### Step 4: Update necessary configuration files
 
 - Modify submit_condor.py
-  - change the proxy path  (from x509up_u29575 to x509up_u{id}") where the id change according to the CERN username
-  - to specify where the output files will be saved (e.g., /eos/user/u/username instead of /eos/user/c/castaned) according to your CERN username
+  - change the proxy path  (from x509up_u29575 to x509up_u{id}") where the {id} according to the user file
+  - EOS user directory (e.g., /eos/user/u/username instead of /eos/user/c/castaned) according CERN username
 
 - Modify run_filter.sh: 
 
-  - Change paths to reflect your local environment (e.g., replace /afs/cern.ch/work/c/castaned/CMSSW_13_3_0/src with your path, for instance /afs/cern.ch/user/u/username).
-  - Adjust the EOS directory for filtered files. (e.g. replace EOS_DIR="/eos/user/c/castaned/NanoAOD_Filtered/${DATASET_FOLDER}" with  EOS_DIR="/eos/user/u/username/NanoAOD_Filtered/${DATASET_FOLDER}"
+  - work folder (e.g., replace /afs/cern.ch/work/c/castaned/CMSSW_13_3_0/src with your path, for instance /afs/cern.ch/user/u/username).
+  - EOS directory (e.g. replace EOS_DIR="/eos/user/c/castaned/NanoAOD_Filtered/${DATASET_FOLDER}" with  EOS_DIR="/eos/user/u/username/NanoAOD_Filtered/${DATASET_FOLDER}"
 
 
 - create local directory for output

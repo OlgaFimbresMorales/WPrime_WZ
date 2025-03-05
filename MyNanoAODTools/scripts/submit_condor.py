@@ -18,6 +18,7 @@ def get_files_from_das(dataset):
         output = subprocess.check_output(cmd, shell=True).decode().split()
         if not output:
             print(f" No files found for {dataset}")
+            print(f"No files found for {dataset}")
             return []
         files = [f"root://cms-xrd-global.cern.ch/{f}" for f in output]
         return files
