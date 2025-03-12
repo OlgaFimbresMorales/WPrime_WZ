@@ -1,0 +1,14 @@
+Starting job on Thu Mar  6 10:39:00 PM CET 2025
+Running on: b9p24p6645.cern.ch
+CMSSW environment set up.
+DATASET FOLDER: WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM 
+EOS DIR: /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM 
+Processing file: root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv6/WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/260000/626B5066-7071-E24E-ACF8-4967F03AF4AB.root
+Will write selected trees to filteredNanoAOD/WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM
+Pre-select 12000 entries out of 12000 (100.00%)
+Processed    10000/   12000 entries, 83.33% (elapsed time     5.7s, curr speed    1.770 kHz, avg speed    1.770 kHz), accepted     7311/   10001 events (73.10%)
+Processed 12000 preselected entries from root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv6/WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/260000/626B5066-7071-E24E-ACF8-4967F03AF4AB.root (12000 entries). Finally selected 8777 entries
+Done filteredNanoAOD/WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM/626B5066-7071-E24E-ACF8-4967F03AF4AB_Skim.root
+Total time 14.9 sec. to process 12000 events. Rate = 807.2 Hz.
+Copying output files to EOS: /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM
+Job finished on Thu Mar  6 22:39:55 CET 2025

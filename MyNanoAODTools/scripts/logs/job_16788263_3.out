@@ -1,8 +1,0 @@
-Starting job on Tue Mar  4 06:49:43 AM CET 2025
-Running on: b9g03p0440.cern.ch
-CMSSW environment set up.
-DATASET FOLDER: WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM 
-EOS DIR: /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM 
-Processing file: root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv6/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/110000/2D52998F-3CA6-BB4C-AF62-CAAC6830AF09.root
-Copying output files to EOS: /eos/user/o/olfimbre/NanoAOD_Filtered/WprimeToWZToWlepZlep_narrow_M1000_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM
-Job finished on Tue Mar  4 06:52:06 CET 2025

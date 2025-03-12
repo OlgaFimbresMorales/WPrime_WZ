@@ -10,6 +10,17 @@ JOB_SCRIPT = "run_filter.sh"  # Job execution script
 EOS_BASE_DIR = "/eos/user/o/olfimbre/NanoAOD_Filtered"  # Modify for your EOS path
 # =================================
 
+def clear_and_create_logs():
+    """Remove and recreate the 'logs' directory."""
+    logs_dir = "logs"
+    if os.path.exists(logs_dir):
+        # Remove the logs directory and its contents
+        subprocess.run(["rm", "-rf", logs_dir])
+    # Recreate the logs directory
+    os.makedirs(logs_dir, exist_ok=True)
+    print("Logs directory cleared and recreated.")
+
+
 
 def get_files_from_das(dataset):
     """Query DAS to get list of files and prepend xrootd prefix"""
@@ -53,7 +64,8 @@ x509userproxy = {X509_PROXY}
 """)
         for file in input_files:
             output_file = f"{output_dir}/filtered_{os.path.basename(file)}"
-            f.write(f'arguments = {file} {output_file} $(ClusterId) $(Process)\nqueue\n')
+            dataset_folder = os.path.basename(output_file)
+            f.write(f'arguments = {file} {output_file} {dataset_folder} $(ClusterId) $(Process)\nqueue\n')
     print(f"Condor JDL `{JDL_FILE}` created!")
 
 def submit_condor():
@@ -63,6 +75,8 @@ def submit_condor():
 
 def main():
     """Main function to process datasets and submit jobs."""
+    clear_and_create_logs()
+    
     datasets = load_datasets(YAML_FILE)
     for dataset in datasets:
         dataset_folder = sanitize_dataset_name(dataset)

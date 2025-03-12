@@ -20,6 +20,7 @@ class LeptonAnalysis(Module):
         self.histograms["electron_pt"] = ROOT.TH1F("electron_pt", "Electron pT; pT (GeV); Events", 50, 0, 200)
         self.histograms["muon_pt"] = ROOT.TH1F("muon_pt", "Muon pT; pT (GeV); Events", 50, 0, 200)
         self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
+        self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
@@ -29,22 +30,49 @@ class LeptonAnalysis(Module):
         electrons = Collection(event, "Electron")
         muons = Collection(event, "Muon")
         
-        good_electrons = sorted([ele for ele in electrons if ele.pt > 20 and abs(ele.eta) < 2.4], key=lambda x: x.pt, reverse=True)
+        
+        #---------------ELECTRONES
+        
+        good_electrons = sorted([ele for ele in electrons if ele.pt > 10 and abs(ele.eta) < 2.5], key=lambda x: x.pt, reverse=True)
+        
+        # Ordenar electrones por pT de mayor a menor
+        good_electrons.sort(key=lambda x: x.pt, reverse=True)
+        
+        
+        # Asegurarse de que el primer electrón tenga pT > 50 y el segundo > 10
+        if len(good_electrons) >= 2:
+            if good_electrons[0].pt > 50 and good_electrons[1].pt > 10:
+                # Solo usamos los dos electrones más importantes
+                e1, e2 = good_electrons[0], good_electrons[1]
+                # Calcular la masa invariante de estos dos electrones
+                invariant_mass = self.computeInvariantMass(e1, e2)
+                self.histograms["invariant_mass"].Fill(invariant_mass)
+                
+                # Llenar los histogramas de pT
+                self.histograms["electron_pt"].Fill(e1.pt)
+                self.histograms["electron_pt"].Fill(e2.pt)
+                
+        #-----------------MUONES
+        
+        
         good_muons = [mu for mu in muons if mu.pt > 20 and abs(mu.eta) < 2.4]
         
-        for ele in good_electrons:
-            self.histograms["electron_pt"].Fill(ele.pt)
-        for mu in good_muons:
-            self.histograms["muon_pt"].Fill(mu.pt)
+        #Ordenas muones por pT de mayor a menor
+        good_muons.sort(key=lambda x: x.pt, reverse=True)
         
-        # Compute invariant mass if at least two good electrons are found
-        invariant_mass = 0
-        if len(good_electrons) >= 2:
-            e1, e2 = good_electrons[:2]
-            invariant_mass = self.computeInvariantMass(e1, e2)
-            self.histograms["invariant_mass"].Fill(invariant_mass)
-
-        self.out.fillBranch("invariant_mass", invariant_mass)  # Now works correctly
+        # Asegurarse de que el primer muon tenga pT > 70 y el segundo > 20
+        if len(good_muons) >= 2:
+            if good_muons[0].pt > 70 and good_electrons[1].pt > 20:
+                # Solo usamos los dos muones más importantes
+                m1, m2 = good_muons[0], good_muons[1]
+                # Calcular la masa invariante de estos dos electrones
+                #invariant_mass = self.computeInvariantMass(e1, e2)
+                #self.histograms["invariant_mass"].Fill(invariant_mass)
+                
+                # Llenar los histogramas de pT
+                self.histograms["muon_pt"].Fill(e1.pt)
+                self.histograms["muon_pt"].Fill(e2.pt)
+                
         
         return len(good_electrons) + len(good_muons) >= self.minLeptons
     
@@ -66,18 +94,21 @@ class LeptonAnalysis(Module):
         for hist in self.histograms.values():
             hist.Write()
         self.outputFile.Close()
+        
+        
 
 
 # Read input file and Condor job ID arguments
-if len(sys.argv) < 4:
-    print("Usage: filterNanoAOD.py <input.root> <cluster_id> <process_id>")
+if len(sys.argv) < 5:
+    print("Usage: filterNanoAOD.py <input.root> <cluster_id> <process_id> <out_folder>")
     sys.exit(1)
 
 inputFile = sys.argv[1]
 cluster_id = sys.argv[2]  # Condor Cluster ID
 process_id = sys.argv[3]  # Condor Process ID
+out_folder = sys.argv[4]
 
-outputDir = "filteredNanoAOD"
+outputDir = out_folder
 os.makedirs(outputDir, exist_ok=True)
 
 # Use Condor job IDs for unique histogram filenames
