@@ -22,15 +22,17 @@ fi
 # Get dataset name from arguments
 INPUT_FILE=$1
 OUTPUT_FILE=$2
-CLUSTERID=$3
+DATASET_FOLDER=$3
 PROCESS=$4
-DATASET_FOLDER=$(dirname "$OUTPUT_FILE" | xargs basename)
+#DATASET_FOLDER=$(dirname "$OUTPUT_FILE" | xargs basename)
 echo "DATASET FOLDER: ${DATASET_FOLDER} "
 EOS_DIR="/eos/user/o/olfimbre/NanoAOD_Filtered/${DATASET_FOLDER}"
 echo "EOS DIR: ${EOS_DIR} "
 
 mkdir -p filteredNanoAOD/$DATASET_FOLDER
-LOCAL_OUTPUT="filteredNanoAOD/${DATASET_FOLDER}"
+mkdir -p filteredNanoAOD/$DATASET_FOLDER/$PROCESS
+
+LOCAL_OUTPUT="filteredNanoAOD/${DATASET_FOLDER}/${PROCESS}"
 
 
 # Ensure EOS directory exists
@@ -39,7 +41,7 @@ xrdfs eosuser.cern.ch mkdir -p $EOS_DIR
 # Run NanoAOD filtering
 echo "Processing file: $INPUT_FILE"
 #python3 filterNanoAOD.py $INPUT_FILE
-python3 analysis.py $INPUT_FILE $CLUSTERID $PROCESS $LOCAL_OUTPUT
+python3 analysis.py $INPUT_FILE $DATASET_FOLDER $PROCESS
 
 # Copy results to EOS
 echo "Copying output files to EOS: $EOS_DIR"

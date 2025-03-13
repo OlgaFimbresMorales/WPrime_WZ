@@ -103,16 +103,17 @@ if len(sys.argv) < 5:
     print("Usage: filterNanoAOD.py <input.root> <cluster_id> <process_id> <out_folder>")
     sys.exit(1)
 
-inputFile = sys.argv[1]
-cluster_id = sys.argv[2]  # Condor Cluster ID
-process_id = sys.argv[3]  # Condor Process ID
-out_folder = sys.argv[4]
+inputFile  = sys.argv[1]
+out_folder  = sys.argv[2]
+process    = sys.argv[3]
+outputDir  = f"filteredNanoAOD/{outfolder}/{process}"  # Corrected
+#outputDir = "filteredNanoAOD"
 
 outputDir = out_folder
 os.makedirs(outputDir, exist_ok=True)
 
 # Use Condor job IDs for unique histogram filenames
-histOutputFile = os.path.join(outputDir, f"histograms_{cluster_id}_{process_id}.root")
+#histOutputFile = os.path.join(outputDir, f"histograms_{cluster_id}_{process_id}.root")
 branchSelFile = "branchsel.txt"
 
 
@@ -121,7 +122,7 @@ p = PostProcessor(
     cut=None,
     branchsel=branchSelFile,  # Keeps only selected branches
     outputbranchsel=None,  # Ensures all new branches are included
-    modules=[LeptonAnalysis(histOutputFile)],
+    modules=[LeptonAnalysis()]#histOutputFile)],
     noOut=False,
     justcount=False
 )

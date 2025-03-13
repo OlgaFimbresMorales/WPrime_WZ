@@ -1,0 +1,3 @@
+Error in <TTree::SetBranchStatus>: unknown branch -> invariant_mass
+Job #1: [ERROR] Local error: no such file or directory:  (source)Job #2: [ERROR] Local error: no such file or directory:  (source)Job #3: [ERROR] Local error: no such file or directory:  (source)Job #4: [ERROR] Local error: no such file or directory:  (source)Jobs total: 4, run: 4, errors: 4
+rm: cannot remove 'filteredNanoAOD/WprimeToWZToWlepZlep_narrow_M600_TuneCP5_13TeV-madgraph-pythia8_RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v1_NANOAODSIM/*.root': No such file or directory
