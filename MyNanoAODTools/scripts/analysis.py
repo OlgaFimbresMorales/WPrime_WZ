@@ -11,7 +11,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 
 class LeptonAnalysis(Module):
     def __init__(self, outputFile):
-        self.minLeptons = 2
+        self.minLeptons = 3
         self.outputFile = outputFile
         self.histograms = {}
 
@@ -20,7 +20,7 @@ class LeptonAnalysis(Module):
         self.histograms["electron_pt"] = ROOT.TH1F("electron_pt", "Electron pT; pT (GeV); Events", 50, 0, 200)
         self.histograms["muon_pt"] = ROOT.TH1F("muon_pt", "Muon pT; pT (GeV); Events", 50, 0, 200)
         self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
-        self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
+        #self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
@@ -39,10 +39,10 @@ class LeptonAnalysis(Module):
         good_electrons.sort(key=lambda x: x.pt, reverse=True)
         
         
-        # Asegurarse de que el primer electrón tenga pT > 50 y el segundo > 10
+        # Asegurarse de que el primer electron tenga pT > 50 y el segundo > 10
         if len(good_electrons) >= 2:
             if good_electrons[0].pt > 50 and good_electrons[1].pt > 10:
-                # Solo usamos los dos electrones más importantes
+                # Solo usamos los dos electrones mas importantes
                 e1, e2 = good_electrons[0], good_electrons[1]
                 # Calcular la masa invariante de estos dos electrones
                 invariant_mass = self.computeInvariantMass(e1, e2)
@@ -62,16 +62,16 @@ class LeptonAnalysis(Module):
         
         # Asegurarse de que el primer muon tenga pT > 70 y el segundo > 20
         if len(good_muons) >= 2:
-            if good_muons[0].pt > 70 and good_electrons[1].pt > 20:
-                # Solo usamos los dos muones más importantes
+            if good_muons[0].pt > 70 and good_muons[1].pt > 20:
+                # Solo usamos los dos muones mas importantes
                 m1, m2 = good_muons[0], good_muons[1]
                 # Calcular la masa invariante de estos dos electrones
                 #invariant_mass = self.computeInvariantMass(e1, e2)
                 #self.histograms["invariant_mass"].Fill(invariant_mass)
                 
                 # Llenar los histogramas de pT
-                self.histograms["muon_pt"].Fill(e1.pt)
-                self.histograms["muon_pt"].Fill(e2.pt)
+                self.histograms["muon_pt"].Fill(m1.pt)
+                self.histograms["muon_pt"].Fill(m2.pt)
                 
         
         return len(good_electrons) + len(good_muons) >= self.minLeptons
