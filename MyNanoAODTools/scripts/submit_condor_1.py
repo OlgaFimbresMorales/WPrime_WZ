@@ -64,7 +64,7 @@ x509userproxy = {X509_PROXY}
 """)
         for file in input_files:
             output_file = f"{output_dir}/filtered_{os.path.basename(file)}"
-            dataset_folder = os.path.basename(output_file)
+            dataset_folder = os.path.basename(os.path.dirname(output_file))
             f.write(f'arguments = {file} {output_file} {dataset_folder} $(Process)\nqueue\n')
             #f.write(f'arguments = {file} {output_file} {dataset_folder} $(ClusterId) $(Process)\nqueue\n')
     print(f"Condor JDL `{JDL_FILE}` created!")

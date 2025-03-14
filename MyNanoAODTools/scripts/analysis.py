@@ -27,16 +27,39 @@ class LeptonAnalysis(Module):
         self.out.branch("invariant_mass", "F")  # Define new branch
 
     def analyze(self, event):
+        #HLT_trigger = Collection(event, "HLT")
+        met = Collection(event, "MET")
         electrons = Collection(event, "Electron")
         muons = Collection(event, "Muon")
+        
+        
+        
+        #-------------------HLT triggers
+        #2016:
+        #commonDefinitions = [
+        #Define("passTrigger","(HLT_TkMu50 || HLT_Mu50 || HLT_Ele27_XPTight_Gsf || HLT_Photon175)"),
+        #]
+        
+        #2017:
+        #commonDefinitions = [
+        #Define("passTrigger","(HLT_Mu50 || HLT_OldMu100 || HLT_TkMu100 || HLT_Ele35_WPTight_Gsf || HLT_Photon200)"),
+        #]
+        
+        #2018:
+        #commonDefinitions = [
+        #Define("passTrigger","(HLT_Mu50 || HLT_OldMu100 || HLT_TkMu100 || HLT_Ele32_WPTight_Gsf || HLT_Photon200)"),
+        #]
+        
+        #2022:
+        commonDefinitions = [
+        Define("passTrigger","(HLT_Mu50 || HLT_Ele35_WPTight_Gsf || HLT_Photon200)"),
+        ]
+    
         
         
         #---------------ELECTRONES
         
         good_electrons = sorted([ele for ele in electrons if ele.pt > 10 and abs(ele.eta) < 2.5], key=lambda x: x.pt, reverse=True)
-        
-        # Ordenar electrones por pT de mayor a menor
-        good_electrons.sort(key=lambda x: x.pt, reverse=True)
         
         
         # Asegurarse de que el primer electron tenga pT > 50 y el segundo > 10
@@ -55,10 +78,8 @@ class LeptonAnalysis(Module):
         #-----------------MUONES
         
         
-        good_muons = [mu for mu in muons if mu.pt > 20 and abs(mu.eta) < 2.4]
+        good_muons = sorted([mu for mu in muons if mu.pt > 20 and abs(mu.eta) < 2.4], key=lambda x: x.pt, reverse=True)
         
-        #Ordenas muones por pT de mayor a menor
-        good_muons.sort(key=lambda x: x.pt, reverse=True)
         
         # Asegurarse de que el primer muon tenga pT > 70 y el segundo > 20
         if len(good_muons) >= 2:
@@ -75,6 +96,20 @@ class LeptonAnalysis(Module):
                 
         
         return len(good_electrons) + len(good_muons) >= self.minLeptons
+        
+        
+        
+        #---------------MET
+        MET_pt_threshold = 40 #limite en GeV
+        if met[0].pt < MET_pt_threshold:
+           return False #Se descarta el evento si pt de MeT es menor a 40
+           
+        
+        if len(good_electrons) >= 2:
+           
+        
+        
+           
     
     def computeInvariantMass(self, lepton1, lepton2):
         e1, px1, py1, pz1 = self.getLorentzVector(lepton1)
@@ -122,7 +157,7 @@ p = PostProcessor(
     cut=None,
     branchsel=branchSelFile,  # Keeps only selected branches
     outputbranchsel=None,  # Ensures all new branches are included
-    modules=[LeptonAnalysis()]#histOutputFile)],
+    modules=[LeptonAnalysis()],#histOutputFile)],
     noOut=False,
     justcount=False
 )
