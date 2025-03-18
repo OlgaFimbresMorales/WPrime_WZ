@@ -25,12 +25,29 @@ class LeptonAnalysis(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         self.out.branch("invariant_mass", "F")  # Define new branch
+     
 
     def analyze(self, event):
         #HLT_trigger = Collection(event, "HLT")
-        met = Collection(event, "MET")
+        met = Collection(event, "MET", )
         electrons = Collection(event, "Electron")
         muons = Collection(event, "Muon")
+        
+        
+        met = Collection(event, "MET")
+        if len(met) == 0:
+            print("Warning: MET collection is empty. Skipping MET analysis.")
+            return False
+
+        # Aqui puedes procesar MET
+        print(f"Processing MET: {met[0].pt}, MET phi: {met[0].phi}")
+
+        
+        
+        MET_pt_threshold = 10
+        if met[0].pt < MET_pt_threshold:
+            return False
+        
         
         
         
@@ -46,16 +63,34 @@ class LeptonAnalysis(Module):
         #]
         
         #2018:
-        #commonDefinitions = [
-        #Define("passTrigger","(HLT_Mu50 || HLT_OldMu100 || HLT_TkMu100 || HLT_Ele32_WPTight_Gsf || HLT_Photon200)"),
-        #]
+        HLT_triggers = [
+        "HLT_Mu50",
+        "HLT_OldMu100",
+        "HLT_TkMu100",
+        "HLT_Ele32_WPTight_Gsf",
+        "HLT_Photon200"
+        ]
+        
+        #pass_trigger = False
+        #for trigger in HLT_triggers:
+        #    if getattr(HLT_triggers, trigger, False):
+        #        pass_trigger = True
+        #        break
+        
+        #if not pass_trigger:
+        #    return False
         
         #2022:
-        commonDefinitions = [
-        Define("passTrigger","(HLT_Mu50 || HLT_Ele35_WPTight_Gsf || HLT_Photon200)"),
-        ]
-    
+        #commonDefinitions = [
+        #Define("passTrigger","(HLT_Mu50 || HLT_Ele35_WPTight_Gsf || HLT_Photon200)"),
+        #]
         
+        
+        #---------------MET
+        #MET_pt_threshold = 40 #limite en GeV
+        #if met[0].pt < MET_pt_threshold:
+         #  return False #Se descarta el evento si pt de MeT es menor a 40
+    
         
         #---------------ELECTRONES
         
@@ -75,6 +110,8 @@ class LeptonAnalysis(Module):
                 self.histograms["electron_pt"].Fill(e1.pt)
                 self.histograms["electron_pt"].Fill(e2.pt)
                 
+             #print(good_electrons) 
+                
         #-----------------MUONES
         
         
@@ -83,12 +120,15 @@ class LeptonAnalysis(Module):
         
         # Asegurarse de que el primer muon tenga pT > 70 y el segundo > 20
         if len(good_muons) >= 2:
+        
+        
+        ###HACER UN PRINT 
             if good_muons[0].pt > 70 and good_muons[1].pt > 20:
                 # Solo usamos los dos muones mas importantes
                 m1, m2 = good_muons[0], good_muons[1]
                 # Calcular la masa invariante de estos dos electrones
                 #invariant_mass = self.computeInvariantMass(e1, e2)
-                #self.histograms["invariant_mass"].Fill(invariant_mass)
+                #self.histograms["invariant_mass"].Fill(invariant_mass)  
                 
                 # Llenar los histogramas de pT
                 self.histograms["muon_pt"].Fill(m1.pt)
@@ -99,13 +139,10 @@ class LeptonAnalysis(Module):
         
         
         
-        #---------------MET
-        MET_pt_threshold = 40 #limite en GeV
-        if met[0].pt < MET_pt_threshold:
-           return False #Se descarta el evento si pt de MeT es menor a 40
+        
            
         
-        if len(good_electrons) >= 2:
+        #if len(good_electrons) >= 2:
            
         
         
@@ -134,21 +171,21 @@ class LeptonAnalysis(Module):
 
 
 # Read input file and Condor job ID arguments
-if len(sys.argv) < 5:
+if len(sys.argv) < 4:
     print("Usage: filterNanoAOD.py <input.root> <cluster_id> <process_id> <out_folder>")
     sys.exit(1)
 
 inputFile  = sys.argv[1]
-out_folder  = sys.argv[2]
+outfolder  = sys.argv[2]
 process    = sys.argv[3]
 outputDir  = f"filteredNanoAOD/{outfolder}/{process}"  # Corrected
 #outputDir = "filteredNanoAOD"
 
-outputDir = out_folder
+#outputDir = outfolder
 os.makedirs(outputDir, exist_ok=True)
 
 # Use Condor job IDs for unique histogram filenames
-#histOutputFile = os.path.join(outputDir, f"histograms_{cluster_id}_{process_id}.root")
+histOutputFile = os.path.join(outputDir, f"histograms_{process}.root")
 branchSelFile = "branchsel.txt"
 
 
@@ -157,7 +194,7 @@ p = PostProcessor(
     cut=None,
     branchsel=branchSelFile,  # Keeps only selected branches
     outputbranchsel=None,  # Ensures all new branches are included
-    modules=[LeptonAnalysis()],#histOutputFile)],
+    modules=[LeptonAnalysis(histOutputFile)],
     noOut=False,
     justcount=False
 )
