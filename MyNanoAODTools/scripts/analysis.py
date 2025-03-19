@@ -28,25 +28,14 @@ class LeptonAnalysis(Module):
      
 
     def analyze(self, event):
-        #HLT_trigger = Collection(event, "HLT")
-        met = Collection(event, "MET", )
         electrons = Collection(event, "Electron")
         muons = Collection(event, "Muon")
+        met_pt = event.MET_pt #este tipo de variables no es un vector y no puede manejarse
+        #como los demas ya que solo son un dato por evento
         
         
-        met = Collection(event, "MET")
-        if len(met) == 0:
-            print("Warning: MET collection is empty. Skipping MET analysis.")
-            return False
-
-        # Aqui puedes procesar MET
-        print(f"Processing MET: {met[0].pt}, MET phi: {met[0].phi}")
-
         
-        
-        MET_pt_threshold = 10
-        if met[0].pt < MET_pt_threshold:
-            return False
+        ##DIVIDIR POR CANALES
         
         
         
@@ -71,14 +60,26 @@ class LeptonAnalysis(Module):
         "HLT_Photon200"
         ]
         
-        #pass_trigger = False
-        #for trigger in HLT_triggers:
-        #    if getattr(HLT_triggers, trigger, False):
-        #        pass_trigger = True
-        #        break
+        #Se activan las ramas de los triggers antes de acceder a ellas
+        for trigger in HLT_triggers:
+            event._tree.SetBranchStatus(trigger, 1) #habilita la lectura de las ramas
+            
+        pass_trigger = False
         
-        #if not pass_trigger:
-        #    return False
+        
+        #Iterar sobre los triggers de la lista
+        for trigger in HLT_triggers:
+            #acceder a la rama del trigger
+            trigger_value = getattr(event, trigger, 0) #Si el trigger no existe se toma valor como 0
+            
+            if trigger_value == 1: #Si el valor es 1, trigger activado
+                pass_trigger = True #El evento pasa por que almenos uno esta activado
+                break #sale del ciclo ya que se encuentra que el evento se acepta
+        
+        if not pass_trigger:
+            return False #si ningun trigger pasa, se rechaza el evento
+        
+        
         
         #2022:
         #commonDefinitions = [
@@ -86,10 +87,15 @@ class LeptonAnalysis(Module):
         #]
         
         
-        #---------------MET
-        #MET_pt_threshold = 40 #limite en GeV
-        #if met[0].pt < MET_pt_threshold:
-         #  return False #Se descarta el evento si pt de MeT es menor a 40
+        
+        
+        #-------------------------MET
+        
+        MET_pt_threshold = 40
+        if met_pt < MET_pt_threshold:
+            return False
+        
+        
     
         
         #---------------ELECTRONES
@@ -99,16 +105,20 @@ class LeptonAnalysis(Module):
         
         # Asegurarse de que el primer electron tenga pT > 50 y el segundo > 10
         if len(good_electrons) >= 2:
-            if good_electrons[0].pt > 50 and good_electrons[1].pt > 10:
+        
+            
+            #if good_electrons[0].pt > 50 and good_electrons[1].pt > 10:
                 # Solo usamos los dos electrones mas importantes
-                e1, e2 = good_electrons[0], good_electrons[1]
+            #    e1, e2 = good_electrons[0], good_electrons[1]
                 # Calcular la masa invariante de estos dos electrones
-                invariant_mass = self.computeInvariantMass(e1, e2)
-                self.histograms["invariant_mass"].Fill(invariant_mass)
+            #    invariant_mass = self.computeInvariantMass(e1, e2)
+            #    self.histograms["invariant_mass"].Fill(invariant_mass)
                 
                 # Llenar los histogramas de pT
-                self.histograms["electron_pt"].Fill(e1.pt)
-                self.histograms["electron_pt"].Fill(e2.pt)
+            #self.histograms["electron_pt"].Fill(e1.pt)
+            #self.histograms["electron_pt"].Fill(e2.pt)
+            
+            return True
                 
              #print(good_electrons) 
                 
@@ -120,20 +130,30 @@ class LeptonAnalysis(Module):
         
         # Asegurarse de que el primer muon tenga pT > 70 y el segundo > 20
         if len(good_muons) >= 2:
+            
+            #Verificar si las cargas de los muones son opuestas entre si
+            for i in range(len(good_muons)):
+                for j in range(i+1, len(good_muons)):
+                
+                    if good_muons[i].charge != good_muons[j].charge:
+        
         
         
         ###HACER UN PRINT 
-            if good_muons[0].pt > 70 and good_muons[1].pt > 20:
+            #if good_muons[0].pt > 70 and good_muons[1].pt > 20:
                 # Solo usamos los dos muones mas importantes
-                m1, m2 = good_muons[0], good_muons[1]
+            #    m1, m2 = good_muons[0], good_muons[1]
                 # Calcular la masa invariante de estos dos electrones
                 #invariant_mass = self.computeInvariantMass(e1, e2)
                 #self.histograms["invariant_mass"].Fill(invariant_mass)  
                 
                 # Llenar los histogramas de pT
-                self.histograms["muon_pt"].Fill(m1.pt)
-                self.histograms["muon_pt"].Fill(m2.pt)
+                #self.histograms["muon_pt"].Fill(m1.pt)
+                #self.histograms["muon_pt"].Fill(m2.pt)
                 
+                       return True
+                
+        return False
         
         return len(good_electrons) + len(good_muons) >= self.minLeptons
         
@@ -146,7 +166,8 @@ class LeptonAnalysis(Module):
            
         
         
-           
+    def etaphiplane(self, lepton1, lepton2):
+        dr_etaphi = ()       
     
     def computeInvariantMass(self, lepton1, lepton2):
         e1, px1, py1, pz1 = self.getLorentzVector(lepton1)
