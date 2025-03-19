@@ -4,6 +4,7 @@ import os
 import sys
 import ROOT
 import math
+import itertools
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection, Object
@@ -25,13 +26,18 @@ class LeptonAnalysis(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         self.out.branch("invariant_mass", "F")  # Define new branch
-     
+        self.out.branch("A_Zmass", "F") #Masa invariante para canal A=eeen
+        inputTree.SetBranchStatus("Electron_pdgId",1)
+        inputTree.SetBranchStatus("Muon_pdgId",1)
 
     def analyze(self, event):
         electrons = Collection(event, "Electron")
         muons = Collection(event, "Muon")
         met_pt = event.MET_pt #este tipo de variables no es un vector y no puede manejarse
         #como los demas ya que solo son un dato por evento
+        
+        leptons = list(muons) + list(electrons)
+        
         
         
         
@@ -91,20 +97,20 @@ class LeptonAnalysis(Module):
         
         #-------------------------MET
         
-        MET_pt_threshold = 40
-        if met_pt < MET_pt_threshold:
-            return False
+        #MET_pt_threshold = 40
+        #if met_pt < MET_pt_threshold:
+        #    return False
         
-        
+        #-----------------
     
         
         #---------------ELECTRONES
         
-        good_electrons = sorted([ele for ele in electrons if ele.pt > 10 and abs(ele.eta) < 2.5], key=lambda x: x.pt, reverse=True)
+        #good_electrons = sorted([ele for ele in electrons if ele.pt > 10 and abs(ele.eta) < 2.5], key=lambda x: x.pt, reverse=True)
         
         
         # Asegurarse de que el primer electron tenga pT > 50 y el segundo > 10
-        if len(good_electrons) >= 2:
+        #if len(good_electrons) >= 2:
         
             
             #if good_electrons[0].pt > 50 and good_electrons[1].pt > 10:
@@ -118,24 +124,24 @@ class LeptonAnalysis(Module):
             #self.histograms["electron_pt"].Fill(e1.pt)
             #self.histograms["electron_pt"].Fill(e2.pt)
             
-            return True
+         #   return True
                 
              #print(good_electrons) 
                 
         #-----------------MUONES
         
         
-        good_muons = sorted([mu for mu in muons if mu.pt > 20 and abs(mu.eta) < 2.4], key=lambda x: x.pt, reverse=True)
+        #good_muons = sorted([mu for mu in muons if mu.pt > 20 and abs(mu.eta) < 2.4], key=lambda x: x.pt, reverse=True)
         
         
         # Asegurarse de que el primer muon tenga pT > 70 y el segundo > 20
-        if len(good_muons) >= 2:
+        #if len(good_muons) >= 2:
             
             #Verificar si las cargas de los muones son opuestas entre si
-            for i in range(len(good_muons)):
-                for j in range(i+1, len(good_muons)):
+         #   for i in range(len(good_muons)):
+          #      for j in range(i+1, len(good_muons)):
                 
-                    if good_muons[i].charge != good_muons[j].charge:
+           #         if good_muons[i].charge != good_muons[j].charge:
         
         
         
@@ -151,18 +157,22 @@ class LeptonAnalysis(Module):
                 #self.histograms["muon_pt"].Fill(m1.pt)
                 #self.histograms["muon_pt"].Fill(m2.pt)
                 
-                       return True
+          #             return True
                 
-        return False
+        #return False
         
-        return len(good_electrons) + len(good_muons) >= self.minLeptons
+        #return len(good_electrons) + len(good_muons) >= self.minLeptons
         
+        if len(leptons) >= 3:
+           print("Eventos seleccionados")
         
+           if len(electrons) >= 3:
+              print("Eventos con 3 electrones")
+              best_pair, best_mass = self.findBestZCandidate(leptons)
+              
+              self.out.fillBranch("A_Zmass", best_mass)
+              
         
-        
-           
-        
-        #if len(good_electrons) >= 2:
            
         
         
@@ -176,12 +186,41 @@ class LeptonAnalysis(Module):
         return math.sqrt(mass2) if mass2 > 0 else 0
     
     def getLorentzVector(self, lepton):
+        
+        
+        m_lepton = 0.000511 if abs(lepton.pdgId) == 11 else 0.105  # Electron: 0.511 MeV, Muon: 105 MeV
         e = math.sqrt(lepton.pt**2 * math.cosh(lepton.eta)**2 + 0.000511**2)  # Electron mass ~0.511 MeV
         px = lepton.pt * math.cos(lepton.phi)
         py = lepton.pt * math.sin(lepton.phi)
         pz = lepton.pt * math.sinh(lepton.eta)
         return e, px, py, pz
-    
+        
+    def findBestZCandidate(self, leptons):
+        Z_MASS = 91.2  # Z boson mass in GeV
+        #Finds the lepton pair with invariant mass closest to the Z boson mass"""
+        best_pair = None
+        best_mass = float("inf")
+        min_diff = float("inf")
+
+        for lepton1, lepton2 in itertools.combinations(leptons, 2):
+            if lepton1.charge + lepton2.charge != 0:  # Require opposite charge
+                continue
+            if abs(lepton1.pdgId) != abs(lepton2.pdgId): 
+                continue
+            
+            mass = self.computeInvariantMass(lepton1, lepton2)
+            diff = abs(mass - Z_MASS)
+
+            if diff < min_diff:
+                min_diff = diff
+                best_mass = mass
+                best_pair = (lepton1, lepton2)
+                
+        if best_pair:        
+           return best_pair, best_mass  
+        else:
+           return None, 0.0
+               
     def endJob(self):
         self.outputFile.cd()
         for hist in self.histograms.values():
