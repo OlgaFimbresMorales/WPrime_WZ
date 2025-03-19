@@ -27,6 +27,15 @@ class LeptonAnalysis(Module):
         self.out = wrappedOutputTree
         self.out.branch("invariant_mass", "F")  # Define new branch
         self.out.branch("A_Zmass", "F") #Masa invariante para canal A=eeen
+        self.out.branch("B_Zmass", "F") #Masa invariante para canal A=eemn
+        self.out.branch("C_Zmass", "F") #Masa invariante para canal A=mmen
+        self.out.branch("D_Zmass", "F") #Masa invariante para canal A=mmmn
+        self.out.branch("A_Dr_Z", "F") #Delta R para candidatos a Z canal A
+        self.out.branch("B_Dr_Z", "F") #Delta R para candidatos a Z canal B
+        self.out.branch("C_Dr_Z", "F") #Delta R para candidatos a Z canal C
+        self.out.branch("D_Dr_Z", "F") #Delta R para candidatos a Z canal D
+        
+        
         inputTree.SetBranchStatus("Electron_pdgId",1)
         inputTree.SetBranchStatus("Muon_pdgId",1)
 
@@ -164,13 +173,45 @@ class LeptonAnalysis(Module):
         #return len(good_electrons) + len(good_muons) >= self.minLeptons
         
         if len(leptons) >= 3:
-           print("Eventos seleccionados")
+           #print("Eventos seleccionados")
         
            if len(electrons) >= 3:
-              print("Eventos con 3 electrones")
+              #print("Eventos con 3 electrones")
               best_pair, best_mass = self.findBestZCandidate(leptons)
+              dr = self.dr_l1l2_Z(best_pair)
               
               self.out.fillBranch("A_Zmass", best_mass)
+              self.out.fillBranch("A_Dr_Z", dr)
+              
+           if len(electrons) >= 2 and len(muons) >= 1:
+              #print("Eventos con 3 electrones")
+              best_pair, best_mass = self.findBestZCandidate(leptons)
+              dr = self.dr_l1l2_Z(best_pair)
+              
+              self.out.fillBranch("B_Zmass", best_mass)
+              self.out.fillBranch("B_Dr_Z", dr) 
+              
+        
+           if len(muons) >= 2 and len(electrons) >= 1:
+              #print("Eventos con 3 electrones")
+              best_pair, best_mass = self.findBestZCandidate(leptons)
+              dr = self.dr_l1l2_Z(best_pair)
+              
+              self.out.fillBranch("C_Zmass", best_mass)
+              
+              self.out.fillBranch("C_Dr_Z", dr)
+                    
+        
+           if len(muons) >= 3:
+              #print("Eventos con 3 electrones")
+              best_pair, best_mass = self.findBestZCandidate(leptons)
+              dr = self.dr_l1l2_Z(best_pair)
+              
+              self.out.fillBranch("D_Zmass", best_mass)
+              
+              self.out.fillBranch("D_Dr_Z", dr)
+        
+        return True
               
         
            
@@ -220,6 +261,15 @@ class LeptonAnalysis(Module):
            return best_pair, best_mass  
         else:
            return None, 0.0
+           
+    def dr_l1l2_Z(self, best_pair):
+        dr_max = 1.5
+        if best_pair:
+           lepton1, lepton2 = best_pair
+           dr = math.sqrt((lepton1.phi - lepton2.phi)**2 + (lepton1.eta - lepton2.eta)**2) 
+           return dr
+        else:
+           return 0
                
     def endJob(self):
         self.outputFile.cd()
