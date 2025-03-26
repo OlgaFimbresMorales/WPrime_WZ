@@ -15,6 +15,7 @@ class LeptonAnalysis(Module):
         self.minLeptons = 3
         self.outputFile = outputFile
         self.histograms = {}
+        self.cutflow = {}
 
     def beginJob(self):
         self.outputFile = ROOT.TFile(self.outputFile, "RECREATE")
@@ -22,6 +23,15 @@ class LeptonAnalysis(Module):
         self.histograms["muon_pt"] = ROOT.TH1F("muon_pt", "Muon pT; pT (GeV); Events", 50, 0, 200)
         self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
         #self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
+
+        self.cutflow = {
+            "total_events": 0,
+            "trigger_pass": 0,
+            "min_leptons_pass": 0,
+            "z_candidate_found": 0,
+            "final_events": 0
+        }
+
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
@@ -34,18 +44,24 @@ class LeptonAnalysis(Module):
         self.out.branch("B_Dr_Z", "F") #Delta R para candidatos a Z canal B
         self.out.branch("C_Dr_Z", "F") #Delta R para candidatos a Z canal C
         self.out.branch("D_Dr_Z", "F") #Delta R para candidatos a Z canal D
+        self.out.branch("A_Sum_pt", "F") #Suma pt de leptones canal A
+        self.out.branch("B_Sum_pt", "F") #Suma pt de leptones canal B
+        self.out.branch("C_Sum_pt", "F") #Suma pt de leptones canal C
+        self.out.branch("D_Sum_pt", "F") #Suma pt de leptones canal D
+        self.out.branch("A_Sum_mass", "F") #Suma de masa de leptones canal A
+        self.out.branch("B_Sum_mass", "F") #Suma de masa de leptones canal B
+        self.out.branch("C_Sum_mass", "F") #Suma de masa de leptones canal C
+        self.out.branch("D_Sum_mass", "F") #Suma de masa de leptones canal D
         
         
         inputTree.SetBranchStatus("Electron_pdgId",1)
         inputTree.SetBranchStatus("Muon_pdgId",1)
+        inputTree.SetBranchStatus("MET_phi",1)
+        
 
     def analyze(self, event):
-        electrons = Collection(event, "Electron")
-        muons = Collection(event, "Muon")
-        met_pt = event.MET_pt #este tipo de variables no es un vector y no puede manejarse
-        #como los demas ya que solo son un dato por evento
         
-        leptons = list(muons) + list(electrons)
+        self.cutflow["total_events"] += 1
         
         
         
@@ -93,7 +109,7 @@ class LeptonAnalysis(Module):
         
         if not pass_trigger:
             return False #si ningun trigger pasa, se rechaza el evento
-        
+        self.cutflow["trigger_pass"] += 1
         
         
         #2022:
@@ -102,6 +118,18 @@ class LeptonAnalysis(Module):
         #]
         
         
+        
+        
+        
+        electrons = Collection(event, "Electron")
+        muons = Collection(event, "Muon")
+        leptons = list(muons) + list(electrons)
+        
+        
+        
+        met_pt = event.MET_pt #este tipo de variables no es un vector y no puede manejarse
+        #como los demas ya que solo son un dato por evento
+        met_phi = event.MET_phi
         
         
         #-------------------------MET
@@ -172,44 +200,102 @@ class LeptonAnalysis(Module):
         
         #return len(good_electrons) + len(good_muons) >= self.minLeptons
         
+        if len(leptons) < self.minLeptons:
+            return False #No pasa el corte de leptones
+        self.cutflow["min_leptons_pass"] += 1 #Si pasa el corte de leptones,
+        #se cuenta este paso
+        
+        #Se busca un candidato a Z
+        best_pair, best_mass = self.findBestZCandidate(leptons)
+        if not best_pair:
+            return False #No se encontro un candidato Z
+        self.cutflow["z_candidate_found"] += 1 #Se encuentra un candidato a Z
+        
         if len(leptons) >= 3:
            #print("Eventos seleccionados")
-        
+           
+           #------------------CANAL A
            if len(electrons) >= 3:
               #print("Eventos con 3 electrones")
-              best_pair, best_mass = self.findBestZCandidate(leptons)
+              lepton3 = electrons[2] #este corresponde al tercer electron del canal A
               dr = self.dr_l1l2_Z(best_pair)
+              total_pt = self.Pt_threshold(leptons)
+              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])    
+              W_mass = self.WMass(lepton3, met_pt, met_phi)
+                  
+              total_mass = invariant_mass + W_mass
               
               self.out.fillBranch("A_Zmass", best_mass)
-              self.out.fillBranch("A_Dr_Z", dr)
+              self.out.fillBranch("A_Sum_mass", total_mass)
               
+              
+              self.out.fillBranch("A_Dr_Z", dr)
+              self.out.fillBranch("A_Sum_pt", total_pt)
+              
+            
+              
+           #------------------CANAL B
            if len(electrons) >= 2 and len(muons) >= 1:
               #print("Eventos con 3 electrones")
-              best_pair, best_mass = self.findBestZCandidate(leptons)
+              lepton3 = muons[0]
               dr = self.dr_l1l2_Z(best_pair)
+              total_pt = self.Pt_threshold(leptons)
+              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+              
+                  
+              W_mass = self.WMass(lepton3, met_pt, met_phi)
+                  
+              total_mass = invariant_mass + W_mass   
+              
               
               self.out.fillBranch("B_Zmass", best_mass)
+              self.out.fillBranch("B_Sum_mass", total_mass)
+              
               self.out.fillBranch("B_Dr_Z", dr) 
+              self.out.fillBranch("B_Sum_pt", total_pt)
+              
               
         
+           #------------------CANAL C
            if len(muons) >= 2 and len(electrons) >= 1:
               #print("Eventos con 3 electrones")
-              best_pair, best_mass = self.findBestZCandidate(leptons)
+              lepton3 = electrons[0]
               dr = self.dr_l1l2_Z(best_pair)
-              
+              total_pt = self.Pt_threshold(leptons)
+              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+                  
+              W_mass = self.WMass(lepton3, met_pt, met_phi)
+                  
+              total_mass = invariant_mass + W_mass
+                     
               self.out.fillBranch("C_Zmass", best_mass)
-              
+              self.out.fillBranch("C_Sum_mass", total_mass)
+                  
               self.out.fillBranch("C_Dr_Z", dr)
+              self.out.fillBranch("C_Sum_pt", total_pt)
+              
                     
         
+           #------------------CANAL D
            if len(muons) >= 3:
               #print("Eventos con 3 electrones")
-              best_pair, best_mass = self.findBestZCandidate(leptons)
+              lepton3 = muons[2]
               dr = self.dr_l1l2_Z(best_pair)
+              total_pt = self.Pt_threshold(leptons)
+              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+  
+                  
+              W_mass = self.WMass(lepton3, met_pt, met_phi)
+                  
+              total_mass = invariant_mass + W_mass 
               
               self.out.fillBranch("D_Zmass", best_mass)
+              self.out.fillBranch("D_Sum_mass", total_mass)
               
               self.out.fillBranch("D_Dr_Z", dr)
+              self.out.fillBranch("D_Sum_pt", total_pt)
+              
+        self.cutflow["final_events"] += 1 #El evento pasa todos los cortes
         
         return True
               
@@ -221,8 +307,11 @@ class LeptonAnalysis(Module):
         dr_etaphi = ()       
     
     def computeInvariantMass(self, lepton1, lepton2):
+        #Obtener los 4-vectores de los dos leptones
         e1, px1, py1, pz1 = self.getLorentzVector(lepton1)
         e2, px2, py2, pz2 = self.getLorentzVector(lepton2)
+        
+        #Calcular la masa invariante (M^2 = E^2 - p^2)
         mass2 = (e1 + e2) ** 2 - (px1 + px2) ** 2 - (py1 + py2) ** 2 - (pz1 + pz2) ** 2
         return math.sqrt(mass2) if mass2 > 0 else 0
     
@@ -231,9 +320,14 @@ class LeptonAnalysis(Module):
         
         m_lepton = 0.000511 if abs(lepton.pdgId) == 11 else 0.105  # Electron: 0.511 MeV, Muon: 105 MeV
         e = math.sqrt(lepton.pt**2 * math.cosh(lepton.eta)**2 + 0.000511**2)  # Electron mass ~0.511 MeV
+        
+        #Componentes del momento
         px = lepton.pt * math.cos(lepton.phi)
         py = lepton.pt * math.sin(lepton.phi)
         pz = lepton.pt * math.sinh(lepton.eta)
+        
+        #Valor absoluto del momento
+        #abs_p = lepton.pt * math.cosh(lepton.eta)
         return e, px, py, pz
         
     def findBestZCandidate(self, leptons):
@@ -270,12 +364,38 @@ class LeptonAnalysis(Module):
            return dr
         else:
            return 0
+           
+    def Pt_threshold(self, leptons):
+        total_pt = 0
+        for lepton in leptons:
+            total_pt += lepton.pt #Suma el pt de cada lepton
+        return total_pt
+        
                
     def endJob(self):
         self.outputFile.cd()
         for hist in self.histograms.values():
             hist.Write()
+            
+        print("Cutflow:")
+        for cut, count in self.cutflow.items():
+            print(f"{cut}: {count}")
+            
         self.outputFile.Close()
+        
+    def WMass(self, lepton, met_pt, met_phi):
+        e, px, py, pz = self.getLorentzVector(lepton)
+        
+        #El MET puede tratarse como un neutrino con energia igual a MET_pt
+        # y phi igual a MET_phi
+        met_px = met_pt * math.cos(met_phi)
+        met_py = met_pt * math.sin(met_phi)
+        
+        met_e = met_pt
+        
+        mass2 = (e + met_e) ** 2 - (px + met_px) ** 2 - (py + met_py) ** 2 - (pz) ** 2
+        return math.sqrt(mass2) if mass2 > 0 else 0
+        
         
         
 
@@ -310,5 +430,6 @@ p = PostProcessor(
 )
 
 p.run()
+
 
 
