@@ -5,6 +5,7 @@ import sys
 import ROOT
 import math
 import itertools
+from array import array
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection, Object
@@ -22,8 +23,7 @@ class LeptonAnalysis(Module):
         self.histograms["electron_pt"] = ROOT.TH1F("electron_pt", "Electron pT; pT (GeV); Events", 50, 0, 200)
         self.histograms["muon_pt"] = ROOT.TH1F("muon_pt", "Muon pT; pT (GeV); Events", 50, 0, 200)
         self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
-        #self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
-
+        
         self.cutflow = {
             "total_events": 0,
             "trigger_pass": 0,
@@ -62,13 +62,6 @@ class LeptonAnalysis(Module):
     def analyze(self, event):
         
         self.cutflow["total_events"] += 1
-        
-        
-        
-        
-        ##DIVIDIR POR CANALES
-        
-        
         
         
         #-------------------HLT triggers
@@ -202,100 +195,123 @@ class LeptonAnalysis(Module):
         
         if len(leptons) < self.minLeptons:
             return False #No pasa el corte de leptones
+            
+            
+            
         self.cutflow["min_leptons_pass"] += 1 #Si pasa el corte de leptones,
         #se cuenta este paso
         
         #Se busca un candidato a Z
         best_pair, best_mass = self.findBestZCandidate(leptons)
         if not best_pair:
+            
             return False #No se encontro un candidato Z
+        
+        
+        
         self.cutflow["z_candidate_found"] += 1 #Se encuentra un candidato a Z
         
-        if len(leptons) >= 3:
-           #print("Eventos seleccionados")
-           
+        passed_in_channel = False #Marca si el evento ha pasado por algun canal
+        
+        #if len(leptons) >= 3:
            #------------------CANAL A
-           if len(electrons) >= 3:
-              #print("Eventos con 3 electrones")
-              lepton3 = electrons[2] #este corresponde al tercer electron del canal A
-              dr = self.dr_l1l2_Z(best_pair)
-              total_pt = self.Pt_threshold(leptons)
-              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])    
-              W_mass = self.WMass(lepton3, met_pt, met_phi)
-                  
-              total_mass = invariant_mass + W_mass
+        if len(electrons) >= 3:
+            passed_in_channel = True
+            print("Eventos con 3 electrones - Canal A")  # Imprimir que es el canal A
+            print(f"Numero de electrones en Canal A: {len(electrons)}")  # Imprimir numero de electrones
+            lepton3 = electrons[2] #este corresponde al tercer electron del canal A
+            dr = self.dr_l1l2_Z(best_pair)
+            total_pt = self.Pt_threshold(leptons)
+            invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])    
+            W_mass = self.WMass(lepton3, met_pt, met_phi)
+            total_mass = invariant_mass + W_mass
               
-              self.out.fillBranch("A_Zmass", best_mass)
-              self.out.fillBranch("A_Sum_mass", total_mass)
+            self.out.fillBranch("A_Zmass", best_mass)
+            self.out.fillBranch("A_Sum_mass", total_mass)
+            self.out.fillBranch("A_Dr_Z", dr)
+            self.out.fillBranch("A_Sum_pt", total_pt)
               
-              
-              self.out.fillBranch("A_Dr_Z", dr)
-              self.out.fillBranch("A_Sum_pt", total_pt)
-              
-            
+            self.cutflow["final_events"] += 1 #Se cuenta solo una vez si pasa por este canal
+            #passed_in_channel = True
+            print(f"Evento Canal A: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
+    
               
            #------------------CANAL B
-           if len(electrons) >= 2 and len(muons) >= 1:
-              #print("Eventos con 3 electrones")
-              lepton3 = muons[0]
-              dr = self.dr_l1l2_Z(best_pair)
-              total_pt = self.Pt_threshold(leptons)
-              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
-              
-                  
-              W_mass = self.WMass(lepton3, met_pt, met_phi)
-                  
-              total_mass = invariant_mass + W_mass   
-              
-              
-              self.out.fillBranch("B_Zmass", best_mass)
-              self.out.fillBranch("B_Sum_mass", total_mass)
-              
-              self.out.fillBranch("B_Dr_Z", dr) 
-              self.out.fillBranch("B_Sum_pt", total_pt)
+        if len(electrons) >= 2 and len(muons) >= 1 and not passed_in_channel:
+            passed_in_channel = True
+            print("Evento con 2 electrones y 1 muon - Canal B")  # Imprimir que es el canal B
+            print(f"Numero de electrones en Canal B: {len(electrons)}")  # Imprimir numero de electrones
+            print(f"Numero de muones en Canal B: {len(muons)}")  # Imprimir numero de muones
+    
+            lepton3 = muons[0]
+            dr = self.dr_l1l2_Z(best_pair)
+            total_pt = self.Pt_threshold(leptons)
+            invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+            W_mass = self.WMass(lepton3, met_pt, met_phi)
+            total_mass = invariant_mass + W_mass   
               
               
+            self.out.fillBranch("B_Zmass", best_mass)
+            self.out.fillBranch("B_Sum_mass", total_mass)
+            self.out.fillBranch("B_Dr_Z", dr) 
+            self.out.fillBranch("B_Sum_pt", total_pt)
+              
+            self.cutflow["final_events"] += 1 #El evento pasa lor cortes del Canal B
+            
+            print(f"Evento Canal B: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
+
         
            #------------------CANAL C
-           if len(muons) >= 2 and len(electrons) >= 1:
-              #print("Eventos con 3 electrones")
-              lepton3 = electrons[0]
-              dr = self.dr_l1l2_Z(best_pair)
-              total_pt = self.Pt_threshold(leptons)
-              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
-                  
-              W_mass = self.WMass(lepton3, met_pt, met_phi)
-                  
-              total_mass = invariant_mass + W_mass
+        if len(muons) >= 2 and len(electrons) >= 1 and not passed_in_channel:
+            passed_in_channel = True
+            print("Evento con 2 muones y 1 electron - Canal C")  # Imprimir que es el canal C
+            print(f"Numero de electrones en Canal C: {len(electrons)}")  # Imprimir numero de electrones
+            print(f"Numero de muones en Canal C: {len(muons)}")  # Imprimir numero de muones
+    
+            lepton3 = electrons[0]
+            dr = self.dr_l1l2_Z(best_pair)
+            total_pt = self.Pt_threshold(leptons)
+            invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+            W_mass = self.WMass(lepton3, met_pt, met_phi)
+            total_mass = invariant_mass + W_mass
                      
-              self.out.fillBranch("C_Zmass", best_mass)
-              self.out.fillBranch("C_Sum_mass", total_mass)
-                  
-              self.out.fillBranch("C_Dr_Z", dr)
-              self.out.fillBranch("C_Sum_pt", total_pt)
+            self.out.fillBranch("C_Zmass", best_mass)
+            self.out.fillBranch("C_Sum_mass", total_mass)
+            self.out.fillBranch("C_Dr_Z", dr)
+            self.out.fillBranch("C_Sum_pt", total_pt)
               
+            self.cutflow["final_events"] += 1 #El evento pasa lor cortes del Canal C
+            print(f"Evento Canal C: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
+
                     
         
            #------------------CANAL D
-           if len(muons) >= 3:
-              #print("Eventos con 3 electrones")
-              lepton3 = muons[2]
-              dr = self.dr_l1l2_Z(best_pair)
-              total_pt = self.Pt_threshold(leptons)
-              invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
-  
-                  
-              W_mass = self.WMass(lepton3, met_pt, met_phi)
-                  
-              total_mass = invariant_mass + W_mass 
+        if len(muons) >= 3 and not passed_in_channel:
+            passed_in_channel = True
+            print("Evento con 3 muones - Canal D")  # Imprimir que es el canal D
+            print(f"Numero de muones en Canal D: {len(muons)}")  # Imprimir numero de muones
+    
+            lepton3 = muons[2]
+            dr = self.dr_l1l2_Z(best_pair)
+            total_pt = self.Pt_threshold(leptons)
+            invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+            W_mass = self.WMass(lepton3, met_pt, met_phi)
+            total_mass = invariant_mass + W_mass 
               
-              self.out.fillBranch("D_Zmass", best_mass)
-              self.out.fillBranch("D_Sum_mass", total_mass)
+            self.out.fillBranch("D_Zmass", best_mass)
+            self.out.fillBranch("D_Sum_mass", total_mass)
+            self.out.fillBranch("D_Dr_Z", dr)
+            self.out.fillBranch("D_Sum_pt", total_pt)
               
-              self.out.fillBranch("D_Dr_Z", dr)
-              self.out.fillBranch("D_Sum_pt", total_pt)
+            self.cutflow["final_events"] += 1 #El evento pasa lor cortes del Canal D
+            print(f"Evento Canal D: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
               
-        self.cutflow["final_events"] += 1 #El evento pasa todos los cortes
+        
+        if not passed_in_channel:
+            return False
+        
+        self.cutflow["final_events"] += 1
+        
         
         return True
               
@@ -396,8 +412,7 @@ class LeptonAnalysis(Module):
         mass2 = (e + met_e) ** 2 - (px + met_px) ** 2 - (py + met_py) ** 2 - (pz) ** 2
         return math.sqrt(mass2) if mass2 > 0 else 0
         
-        
-        
+    
 
 
 # Read input file and Condor job ID arguments
