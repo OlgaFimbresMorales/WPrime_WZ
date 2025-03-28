@@ -56,6 +56,7 @@ class LeptonAnalysis(Module):
         
         inputTree.SetBranchStatus("Electron_pdgId",1)
         inputTree.SetBranchStatus("Muon_pdgId",1)
+        inputTree.SetBranchStatus("Muon_mass",1)
         inputTree.SetBranchStatus("MET_phi",1)
         
 
@@ -84,15 +85,13 @@ class LeptonAnalysis(Module):
         "HLT_Photon200"
         ]
         
-        #Se activan las ramas de los triggers antes de acceder a ellas
-        for trigger in HLT_triggers:
-            event._tree.SetBranchStatus(trigger, 1) #habilita la lectura de las ramas
-            
+        
         pass_trigger = False
         
         
         #Iterar sobre los triggers de la lista
         for trigger in HLT_triggers:
+            event._tree.SetBranchStatus(trigger, 1) #habilita la lectura de las ramas
             #acceder a la rama del trigger
             trigger_value = getattr(event, trigger, 0) #Si el trigger no existe se toma valor como 0
             
@@ -134,77 +133,15 @@ class LeptonAnalysis(Module):
         #-----------------
     
         
-        #---------------ELECTRONES
-        
-        #good_electrons = sorted([ele for ele in electrons if ele.pt > 10 and abs(ele.eta) < 2.5], key=lambda x: x.pt, reverse=True)
-        
-        
-        # Asegurarse de que el primer electron tenga pT > 50 y el segundo > 10
-        #if len(good_electrons) >= 2:
-        
-            
-            #if good_electrons[0].pt > 50 and good_electrons[1].pt > 10:
-                # Solo usamos los dos electrones mas importantes
-            #    e1, e2 = good_electrons[0], good_electrons[1]
-                # Calcular la masa invariante de estos dos electrones
-            #    invariant_mass = self.computeInvariantMass(e1, e2)
-            #    self.histograms["invariant_mass"].Fill(invariant_mass)
-                
-                # Llenar los histogramas de pT
-            #self.histograms["electron_pt"].Fill(e1.pt)
-            #self.histograms["electron_pt"].Fill(e2.pt)
-            
-         #   return True
-                
-             #print(good_electrons) 
-                
-        #-----------------MUONES
-        
-        
-        #good_muons = sorted([mu for mu in muons if mu.pt > 20 and abs(mu.eta) < 2.4], key=lambda x: x.pt, reverse=True)
-        
-        
-        # Asegurarse de que el primer muon tenga pT > 70 y el segundo > 20
-        #if len(good_muons) >= 2:
-            
-            #Verificar si las cargas de los muones son opuestas entre si
-         #   for i in range(len(good_muons)):
-          #      for j in range(i+1, len(good_muons)):
-                
-           #         if good_muons[i].charge != good_muons[j].charge:
-        
-        
-        
-        ###HACER UN PRINT 
-            #if good_muons[0].pt > 70 and good_muons[1].pt > 20:
-                # Solo usamos los dos muones mas importantes
-            #    m1, m2 = good_muons[0], good_muons[1]
-                # Calcular la masa invariante de estos dos electrones
-                #invariant_mass = self.computeInvariantMass(e1, e2)
-                #self.histograms["invariant_mass"].Fill(invariant_mass)  
-                
-                # Llenar los histogramas de pT
-                #self.histograms["muon_pt"].Fill(m1.pt)
-                #self.histograms["muon_pt"].Fill(m2.pt)
-                
-          #             return True
-                
-        #return False
-        
-        #return len(good_electrons) + len(good_muons) >= self.minLeptons
         
         if len(leptons) < self.minLeptons:
-            return False #No pasa el corte de leptones
-            
-            
-            
+            return False #No pasa el corte de leptones    
         self.cutflow["min_leptons_pass"] += 1 #Si pasa el corte de leptones,
         #se cuenta este paso
         
         #Se busca un candidato a Z
         best_pair, best_mass = self.findBestZCandidate(leptons)
-        if not best_pair:
-            
+        if not best_pair: 
             return False #No se encontro un candidato Z
         
         
@@ -213,12 +150,14 @@ class LeptonAnalysis(Module):
         
         passed_in_channel = False #Marca si el evento ha pasado por algun canal
         
-        #if len(leptons) >= 3:
            #------------------CANAL A
         if len(electrons) >= 3:
             passed_in_channel = True
-            print("Eventos con 3 electrones - Canal A")  # Imprimir que es el canal A
-            print(f"Numero de electrones en Canal A: {len(electrons)}")  # Imprimir numero de electrones
+            #print("Eventos con 3 electrones - Canal A")  # Imprimir que es el canal A
+            #print(f"Numero de electrones en Canal A: {len(electrons)}")  # Imprimir numero de electrones
+            #self.saveToFile(event, "A", best_pair, best_mass, leptons, met_pt, met_phi)
+            
+            
             lepton3 = electrons[2] #este corresponde al tercer electron del canal A
             dr = self.dr_l1l2_Z(best_pair)
             total_pt = self.Pt_threshold(leptons)
@@ -239,35 +178,69 @@ class LeptonAnalysis(Module):
            #------------------CANAL B
         if len(electrons) >= 2 and len(muons) >= 1 and not passed_in_channel:
             passed_in_channel = True
-            print("Evento con 2 electrones y 1 muon - Canal B")  # Imprimir que es el canal B
-            print(f"Numero de electrones en Canal B: {len(electrons)}")  # Imprimir numero de electrones
-            print(f"Numero de muones en Canal B: {len(muons)}")  # Imprimir numero de muones
-    
-            lepton3 = muons[0]
-            dr = self.dr_l1l2_Z(best_pair)
-            total_pt = self.Pt_threshold(leptons)
-            invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
-            W_mass = self.WMass(lepton3, met_pt, met_phi)
-            total_mass = invariant_mass + W_mass   
-              
-              
-            self.out.fillBranch("B_Zmass", best_mass)
-            self.out.fillBranch("B_Sum_mass", total_mass)
-            self.out.fillBranch("B_Dr_Z", dr) 
-            self.out.fillBranch("B_Sum_pt", total_pt)
-              
-            self.cutflow["final_events"] += 1 #El evento pasa lor cortes del Canal B
-            
-            print(f"Evento Canal B: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
+            # Filtramos los muones que cumplen con las condiciones:
+            good_muons = sorted(
+                [mu for mu in muons if mu.pt > 20 and mu.mass > 0 and abs(mu.eta) < 2.4],
+                key=lambda x: x.pt,
+                reverse=True
+            )
+
+    # Verificar si tenemos muones que cumplen los cortes
+            if len(good_muons) < 1:
+                print("No hay muones suficientes que pasen los cortes en Canal B")
+                passed_in_channel = False
+            else:
+                print("Muones seleccionados en Canal B:")
+                for muon in good_muons:
+                    print(f"Muon pt={muon.pt}, eta={muon.eta}, phi={muon.phi}, mass={muon.mass}")
+
+        # Ahora que sabemos que hay al menos un muon que pasa los cortes, seleccionamos el primero
+                lepton3 = good_muons[0]
+
+        # Continuamos con el calculo de variables del evento
+                dr = self.dr_l1l2_Z(best_pair)
+                total_pt = self.Pt_threshold(leptons)
+                invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+                W_mass = self.WMass(lepton3, met_pt, met_phi)
+                total_mass = invariant_mass + W_mass   
+
+        # Llenamos las ramas del archivo de salida
+                self.out.fillBranch("B_Zmass", best_mass)
+                self.out.fillBranch("B_Sum_mass", total_mass)
+                self.out.fillBranch("B_Dr_Z", dr) 
+                self.out.fillBranch("B_Sum_pt", total_pt)
+
+                self.cutflow["final_events"] += 1  # El evento pasa los cortes del Canal B
+
+        # Imprimir resultados del evento en el Canal B
+                print(f"Evento Canal B: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
 
         
            #------------------CANAL C
         if len(muons) >= 2 and len(electrons) >= 1 and not passed_in_channel:
             passed_in_channel = True
-            print("Evento con 2 muones y 1 electron - Canal C")  # Imprimir que es el canal C
-            print(f"Numero de electrones en Canal C: {len(electrons)}")  # Imprimir numero de electrones
-            print(f"Numero de muones en Canal C: {len(muons)}")  # Imprimir numero de muones
-    
+            good_muons = sorted(
+                [mu for mu in muons if mu.pt > 20 and mu.mass > 0 and abs(mu.eta) < 2.4],
+                key=lambda x: x.pt,
+                reverse=True
+            )
+
+    # Verificar si tenemos muones que cumplen los cortes
+            if len(good_muons) < 2:
+                print("No hay muones suficientes que pasen los cortes en Canal B")
+                passed_in_channel = False
+            else:
+                print("Muones seleccionados en Canal B:")
+                for muon in good_muons:
+                    print(f"Muon pt={muon.pt}, eta={muon.eta}, phi={muon.phi}, mass={muon.mass}")
+
+            #print("Evento con 2 muones y 1 electron - Canal C")  # Imprimir que es el canal C
+            #print(f"Numero de electrones en Canal C: {len(electrons)}")  # Imprimir numero de electrones
+            #print(f"Numero de muones en Canal C: {len(muons)}")  # Imprimir numero de muones
+            #self.saveToFile(event, "C", best_pair, best_mass, leptons, met_pt, met_phi)
+            
+            
+            
             lepton3 = electrons[0]
             dr = self.dr_l1l2_Z(best_pair)
             total_pt = self.Pt_threshold(leptons)
@@ -288,23 +261,40 @@ class LeptonAnalysis(Module):
            #------------------CANAL D
         if len(muons) >= 3 and not passed_in_channel:
             passed_in_channel = True
-            print("Evento con 3 muones - Canal D")  # Imprimir que es el canal D
-            print(f"Numero de muones en Canal D: {len(muons)}")  # Imprimir numero de muones
-    
-            lepton3 = muons[2]
-            dr = self.dr_l1l2_Z(best_pair)
-            total_pt = self.Pt_threshold(leptons)
-            invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
-            W_mass = self.WMass(lepton3, met_pt, met_phi)
-            total_mass = invariant_mass + W_mass 
+            #print("Evento con 3 muones - Canal D")  # Imprimir que es el canal D
+            #print(f"Numero de muones en Canal D: {len(muons)}")  # Imprimir numero de muones
+            #self.saveToFile(event, "D", best_pair, best_mass, leptons, met_pt, met_phi)
+            good_muons = sorted(
+                [mu for mu in muons if mu.pt > 20 and mu.mass > 0 and abs(mu.eta) < 2.4],
+                key=lambda x: x.pt,
+                reverse=True
+            )
+
+    # Verificar si tenemos muones que cumplen los cortes
+            if len(good_muons) < 3:
+                print("No hay muones suficientes que pasen los cortes en Canal B")
+                passed_in_channel = False
+            else:
+                print("Muones seleccionados en Canal B:")
+                for muon in good_muons:
+                    print(f"Muon pt={muon.pt}, eta={muon.eta}, phi={muon.phi}, mass={muon.mass}")
+            
+                lepton3 = good_muons[2]
+                W_mass = self.WMass(lepton3, met_pt, met_phi) 
+                
+                dr = self.dr_l1l2_Z(best_pair)
+                total_pt = self.Pt_threshold(leptons)
+                invariant_mass = self.computeInvariantMass(best_pair[0], best_pair[1])
+            
+                total_mass = invariant_mass + W_mass 
               
-            self.out.fillBranch("D_Zmass", best_mass)
-            self.out.fillBranch("D_Sum_mass", total_mass)
-            self.out.fillBranch("D_Dr_Z", dr)
-            self.out.fillBranch("D_Sum_pt", total_pt)
+                self.out.fillBranch("D_Zmass", best_mass)
+                self.out.fillBranch("D_Sum_mass", total_mass)
+                self.out.fillBranch("D_Dr_Z", dr)
+                self.out.fillBranch("D_Sum_pt", total_pt)
               
-            self.cutflow["final_events"] += 1 #El evento pasa lor cortes del Canal D
-            print(f"Evento Canal D: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
+                self.cutflow["final_events"] += 1 #El evento pasa lor cortes del Canal D
+                print(f"Evento Canal D: Z_mass={best_mass}, Sum_mass={total_mass}, Dr_Z={dr}, Sum_pt={total_pt}")
               
         
         if not passed_in_channel:
@@ -314,10 +304,7 @@ class LeptonAnalysis(Module):
         
         
         return True
-              
-        
-           
-        
+       
         
     def etaphiplane(self, lepton1, lepton2):
         dr_etaphi = ()       
@@ -389,15 +376,12 @@ class LeptonAnalysis(Module):
         
                
     def endJob(self):
-        self.outputFile.cd()
-        for hist in self.histograms.values():
-            hist.Write()
-            
+        self.outputFile.Write()
+        self.outputFile.Close()
+        
         print("Cutflow:")
         for cut, count in self.cutflow.items():
             print(f"{cut}: {count}")
-            
-        self.outputFile.Close()
         
     def WMass(self, lepton, met_pt, met_phi):
         e, px, py, pz = self.getLorentzVector(lepton)
