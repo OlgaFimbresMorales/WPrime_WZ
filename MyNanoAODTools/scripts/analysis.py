@@ -26,7 +26,7 @@ class LeptonAnalysis(Module):
         
         self.cutflow = {
             "total_events": 0,
-            "trigger_pass": 0,
+            #"trigger_pass": 0,
             "min_leptons_pass": 0,
             "z_candidate_found": 0,
             "final_events": 0
@@ -55,9 +55,18 @@ class LeptonAnalysis(Module):
         
         
         inputTree.SetBranchStatus("Electron_pdgId",1)
+        inputTree.SetBranchStatus("Electron_charge",1)
+        inputTree.SetBranchStatus("Electron_pt",1)
+        inputTree.SetBranchStatus("Electron_eta",1)
+        inputTree.SetBranchStatus("Electron_phi",1)
+        inputTree.SetBranchStatus("Muon_pt",1)
+        inputTree.SetBranchStatus("Muon_eta",1)
+        inputTree.SetBranchStatus("Muon_phi",1)
+        inputTree.SetBranchStatus("Muon_charge",1)
         inputTree.SetBranchStatus("Muon_pdgId",1)
         inputTree.SetBranchStatus("Muon_mass",1)
         inputTree.SetBranchStatus("MET_phi",1)
+        
         
 
     def analyze(self, event):
@@ -77,31 +86,31 @@ class LeptonAnalysis(Module):
         #]
         
         #2018:
-        HLT_triggers = [
-        "HLT_Mu50",
-        "HLT_OldMu100",
-        "HLT_TkMu100",
-        "HLT_Ele32_WPTight_Gsf",
-        "HLT_Photon200"
-        ]
+        #HLT_triggers = [
+        #"HLT_Mu50",
+        #"HLT_OldMu100",
+        #"HLT_TkMu100",
+        #"HLT_Ele32_WPTight_Gsf",
+        #"HLT_Photon200"
+        #]
         
         
-        pass_trigger = False
+        #pass_trigger = False
         
         
         #Iterar sobre los triggers de la lista
-        for trigger in HLT_triggers:
-            event._tree.SetBranchStatus(trigger, 1) #habilita la lectura de las ramas
+        #for trigger in HLT_triggers:
+        #    event._tree.SetBranchStatus(trigger, 1) #habilita la lectura de las ramas
             #acceder a la rama del trigger
-            trigger_value = getattr(event, trigger, 0) #Si el trigger no existe se toma valor como 0
+        #    trigger_value = getattr(event, trigger, 0) #Si el trigger no existe se toma valor como 0
             
-            if trigger_value == 1: #Si el valor es 1, trigger activado
-                pass_trigger = True #El evento pasa por que almenos uno esta activado
-                break #sale del ciclo ya que se encuentra que el evento se acepta
+        #    if trigger_value == 1: #Si el valor es 1, trigger activado
+        #        pass_trigger = True #El evento pasa por que almenos uno esta activado
+        #        break #sale del ciclo ya que se encuentra que el evento se acepta
         
-        if not pass_trigger:
-            return False #si ningun trigger pasa, se rechaza el evento
-        self.cutflow["trigger_pass"] += 1
+        #if not pass_trigger:
+        #    return False #si ningun trigger pasa, se rechaza el evento
+        #self.cutflow["trigger_pass"] += 1
         
         
         #2022:
@@ -300,7 +309,7 @@ class LeptonAnalysis(Module):
         if not passed_in_channel:
             return False
         
-        self.cutflow["final_events"] += 1
+        #self.cutflow["final_events"] += 1
         
         
         return True
