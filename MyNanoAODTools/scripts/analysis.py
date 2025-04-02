@@ -163,8 +163,8 @@ class LeptonAnalysis(Module):
         
     # **Canal A**
         if len(good_electrons) >= 3:  # Asegurate de que hay al menos 3 electrones
-            if passed_in_channel:
-                return False
+            #if passed_in_channel:
+            #    return False
                 
             passed_in_channel = True
                 
@@ -181,13 +181,16 @@ class LeptonAnalysis(Module):
             leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
 
             best_lep, best_mass_W = self.findBestWCandidate(leptons, met_pt, met_phi)
+            if not best_lep:
+                return False #no se encontro un lepton para W
+            
             lepton3 = best_lep
             lepton3_pt = lepton3.pt
 
             dr = self.dr_l1l2_Z(best_pair)
             total_pt = lepton1_pt + lepton2_pt + lepton3_pt
             total_mass = best_mass_Z + best_mass_W
-            nlep = len(good_electrons)
+            nlep = len(good_leptons)
 
         # Almacenar las ramas para el canal A
             self.out.fillBranch("A_Zmass", best_mass_Z)
@@ -205,8 +208,8 @@ class LeptonAnalysis(Module):
 
     # **Canal B**
         elif len(good_electrons) >= 2 and len(good_muons) >= 1:  # Asegurate de que hay al menos 2 electrones y 1 muon
-            if passed_in_channel:
-                return False
+            #if passed_in_channel:
+            #    return False
                 
             passed_in_channel = True
                 
@@ -224,13 +227,15 @@ class LeptonAnalysis(Module):
             leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
 
             best_lep, best_mass_W = self.findBestWCandidate(leptons, met_pt, met_phi)
+            if not best_lep:
+                return False #no se encontro un lepton para W
             lepton3 = best_lep
             lepton3_pt = lepton3.pt
 
             dr = self.dr_l1l2_Z(best_pair)
             total_pt = lepton1_pt + lepton2_pt + lepton3_pt
             total_mass = best_mass_Z + best_mass_W
-            nlep = len(good_muons)
+            nlep = len(good_leptons)
 
         # Almacenar las ramas para el canal B
             self.out.fillBranch("B_Zmass", best_mass_Z)
