@@ -319,27 +319,6 @@ class LeptonAnalysis(Module):
            return best_lep, passW
 
           
-    # def findBestWCandidate(self, leptons, met_pt, met_phi):
-    #     W_MASS = 80.4 #W boson mass in GeV
-    #     best_lep = None
-    #     min_diff = float("inf")
-    #     best_mass_W = float("inf")
-        
-    #     for lepton in leptons:
-    #         mass = self.WMass(lepton, met_pt, met_phi)
-    #         diff = abs(mass - W_MASS)
-            
-    #         if diff < min_diff:
-    #             min_diff = diff
-    #             best_mass_W = mass
-    #             best_lep = lepton
-                
-    #     if best_lep:
-    #         return best_lep, best_mass_W
-    #     else:
-    #         return None, 0.0
-        
-           
     def dr_l1l2_Z(self, best_pair):
         dr_max = 1.5
         if best_pair:
