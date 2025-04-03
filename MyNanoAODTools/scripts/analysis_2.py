@@ -141,7 +141,7 @@ class LeptonAnalysis(Module):
 
             
             
-            return True
+
         return True      
         
 #        if len(good_leptons) >= self.minLeptons:   # at least with 3 leptons
