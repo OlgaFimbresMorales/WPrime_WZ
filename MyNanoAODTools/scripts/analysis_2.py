@@ -87,51 +87,57 @@ class LeptonAnalysis(Module):
         met_phi = event.MET_phi
         
         #---------------ELECTRONES minimut cuts
-        good_electrons = sorted([ele for ele in electrons if ele.pt > 50 and abs(ele.eta) < 2.5], key=lambda x: x.pt, reverse=True) 
+        good_electrons = sorted([ele for ele in electrons if ele.pt > 10 and abs(ele.eta) < 2.5], key=lambda x: x.pt, reverse=True) 
                 
         #---------------MUONES minimut cuts
-        good_muons = sorted([mu for mu in muons if mu.pt > 80 and abs(mu.eta) < 2.4], key=lambda x: x.pt, reverse=True)
+        good_muons = sorted([mu for mu in muons if mu.pt > 20 and abs(mu.eta) < 2.4], key=lambda x: x.pt, reverse=True)
         
         
         good_leptons = good_electrons + good_muons
 
         self.out.fillBranch("nLeptons", len(good_leptons)) #number of leptons per event
 
+
+        # Initialize all channel flags to zero
+        self.out.fillBranch("nev_passA", 0)
+        self.out.fillBranch("nev_passB", 0)
+        self.out.fillBranch("nev_passC", 0)
+        self.out.fillBranch("nev_passD", 0)
+        
         if len(good_leptons) >= self.minLeptons: 
 
             if len(good_electrons) >= 3:  # Canal A  eee
 
                 self.out.fillBranch("nev_passA", 1) #number of leptons per event
                 
-                best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
+                best_pair, best_mass_Z = self.findBestZCandidate(good_electrons)
                 self.out.fillBranch("A_Zmass", best_mass_Z)
-                return True
+
 
 
             if len(good_electrons) >= 2 and len(good_muons)>=1:  # Canal B eemu
 
                 self.out.fillBranch("nev_passB", 1) #number of leptons per event
                 
-                best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
+                best_pair, best_mass_Z = self.findBestZCandidate(good_electrons)
                 self.out.fillBranch("B_Zmass", best_mass_Z)
-                return True
+
 
 
             if len(good_muons) >= 2 and len(good_electrons)>=1:  # Canal C   mumue
 
                 self.out.fillBranch("nev_passC", 1) #number of leptons per event
                 
-                best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
+                best_pair, best_mass_Z = self.findBestZCandidate(good_muons)
                 self.out.fillBranch("C_Zmass", best_mass_Z)
-                return True
+
 
             if len(good_muons) >= 3:  # Canal D  mumumu
 
                 self.out.fillBranch("nev_passD", 1) #number of leptons per event
                 
-                best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
+                best_pair, best_mass_Z = self.findBestZCandidate(good_muons)
                 self.out.fillBranch("D_Zmass", best_mass_Z)
-                return True
 
             
             
