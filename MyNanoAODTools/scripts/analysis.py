@@ -180,8 +180,8 @@ class LeptonAnalysis(Module):
                 self.cutflow["z_candidate_found_A"] += 1
 
                 best_pair, best_mass_Z = self.findBestZCandidate(good_electrons)
-                if not best_pair:
-                    return False  # No se encontro un par Z
+                #if not best_pair:
+                #    return False  # No se encontro un par Z
 
                 lepton1, lepton2 = best_pair
                 lepton1_pt = lepton1.pt
@@ -218,8 +218,8 @@ class LeptonAnalysis(Module):
 
                 #self.cutflow["final_events_A"] += 1
                 #return True  # Termina el analisis para el canal A
-                else:
-                    return False
+                #else:
+                #    return False
 
         
     
@@ -233,8 +233,8 @@ class LeptonAnalysis(Module):
                 self.cutflow["z_candidate_found_B"] += 1
 
                 best_pair, best_mass_Z = self.findBestZCandidate(good_electrons)
-                if not best_pair:
-                    return False  # No se encontro un par Z
+                #if not best_pair:
+                #    return False  # No se encontro un par Z
 
                 lepton1, lepton2 = best_pair
                 lepton1_pt = lepton1.pt
@@ -271,8 +271,8 @@ class LeptonAnalysis(Module):
 
                 #self.cutflow["final_events_A"] += 1
                 #return True  # Termina el analisis para el canal A
-                else:
-                    return False
+                #else:
+                #    return False
              #CANAL C   
             if len(good_muons) >= 2 and len(good_electrons) >= 1:
                 
@@ -283,8 +283,9 @@ class LeptonAnalysis(Module):
                 self.cutflow["z_candidate_found_C"] += 1
 
                 best_pair, best_mass_Z = self.findBestZCandidate(good_muons)
-                if not best_pair:
-                    return False  # No se encontro un par Z
+                self.out.fillBranch("C_Zmass", best_mass_Z)
+                #if not best_pair:
+                #    return False  # No se encontro un par Z
 
                 lepton1, lepton2 = best_pair
                 lepton1_pt = lepton1.pt
@@ -292,7 +293,7 @@ class LeptonAnalysis(Module):
                 
                 dr = self.dr_l1l2_Z(best_pair)
                 self.out.fillBranch("C_Dr_Z", dr)
-                self.out.fillBranch("C_Zmass", best_mass_Z)
+                
 
                 leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
 
@@ -306,12 +307,13 @@ class LeptonAnalysis(Module):
                 
                 #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
                     total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                    self.out.fillBranch("C_Sum_mass", total_mass)
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
                 
                 #self.out.fillBranch("A_Wmass", best_mass_W)
-                    self.out.fillBranch("C_Sum_mass", total_mass)
+                    
                 
                 #self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
                 #self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
@@ -321,8 +323,8 @@ class LeptonAnalysis(Module):
 
                 #self.cutflow["final_events_A"] += 1
                 #return True  # Termina el analisis para el canal A
-                else:
-                    return False
+                #else:
+                #    return False
                     
             #CANAL D
             if len(good_muons) >= 3:
@@ -334,8 +336,8 @@ class LeptonAnalysis(Module):
                 self.cutflow["z_candidate_found_D"] += 1
 
                 best_pair, best_mass_Z = self.findBestZCandidate(good_muons)
-                if not best_pair:
-                    return False  # No se encontro un par Z
+                #if not best_pair:
+                #    return False  # No se encontro un par Z
 
                 lepton1, lepton2 = best_pair
                 lepton1_pt = lepton1.pt
@@ -345,7 +347,7 @@ class LeptonAnalysis(Module):
                 self.out.fillBranch("D_Dr_Z", dr)
                 self.out.fillBranch("D_Zmass", best_mass_Z)
 
-                leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
+                leptons = [lepton for lepton in good_muons if lepton != lepton1 and lepton != lepton2]
 
                 best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
                 
@@ -372,8 +374,8 @@ class LeptonAnalysis(Module):
 
                 #self.cutflow["final_events_A"] += 1
                 #return True  # Termina el analisis para el canal A
-                else:
-                    return False
+                #else:
+                #    return False
 
         
         return True     
