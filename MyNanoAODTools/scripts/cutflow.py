@@ -11,57 +11,44 @@ tree_name = "Events"
 df = ROOT.RDataFrame(tree_name, file_path)
 
 # Define the cuts
-MET_CUT = "MET_pt > 40"
 NLEPTON_CUT = "nLeptons >= 3"
-
 CUT_A = "nev_passA == 1"
-CUT_A_MZ = "A_Zmass>70 && A_Zmass<110"
+CUT_B = "nev_passB == 1"
+CUT_C = "nev_passC == 1"
+CUT_D = "nev_passD == 1"
+CUT_Z = "A_Zmass>70 && A_Zmass<110"
 
 # Initial number of events
 total_events = df.Count().GetValue()
 
-# Apply each cut sequentially
-
+# Apply nLepton cut
 df_nlepton = df.Filter(NLEPTON_CUT)
 events_nlepton = df_nlepton.Count().GetValue()
 
-df_nlepton_passA = df_nlepton.Filter(CUT_A)
-events_passA = df_nlepton_passA.Count().GetValue()
+# Apply channel cuts
+df_A = df_nlepton.Filter(CUT_A)
+df_B = df_nlepton.Filter(CUT_B)
+df_C = df_nlepton.Filter(CUT_C)
+df_D = df_nlepton.Filter(CUT_D)
 
-df_A_Zmass = df_nlepton_passA.Filter(CUT_A_MZ)
-events_passA_MZ = df_A_Zmass.Count().GetValue()
+events_A = df_A.Count().GetValue()
+events_B = df_B.Count().GetValue()
+events_C = df_C.Count().GetValue()
+events_D = df_D.Count().GetValue()
 
-# Cortes por canal
-
-#df_mass = df_nlepton.Filter(MASS_CUT)
-#events_mass = df_mass.Count().GetValue()
+# Apply Z window cut
+events_A_Z = df_A.Filter(CUT_Z).Count().GetValue()
+events_B_Z = df_B.Filter(CUT_Z).Count().GetValue()
+events_C_Z = df_C.Filter(CUT_Z).Count().GetValue()
+events_D_Z = df_D.Filter(CUT_Z).Count().GetValue()
 
 # Print the Cutflow Table
 print("\nCUTFLOW TABLE:")
-print(f"{'Cut':<25}{'Events':>10}")
-print("-" * 35)
-print(f"{'Total Events':<25}{total_events:>10}")
-print(f"{'nLepton ≥ 3':<25}{events_nlepton:>10}")
-print(f"{'Events in A':<25}{events_passA:>10}")
-print(f"{'Z window':<25}{events_passA_MZ:>10}")
+print(f"{'Selection':<20}{'Events':>10}")
+print("-" * 40)
+print(f"{'Total Events':<20}{total_events:>10}")
+print(f"{'nLepton ≥ 3':<20}{events_nlepton:>10}")
+print(f"{'Channel':<20}{'A':>10}{'B':>10}{'C':>10}{'D':>10}")
+print(f"{'Events':<20}{events_A:>10}{events_B:>10}{events_C:>10}{events_D:>10}")
+print(f"{'Z window':<20}{events_A_Z:>10}{events_B_Z:>10}{events_C_Z:>10}{events_D_Z:>10}")
 
-
-# # Optional: Save cutflow to a histogram
-# hist = ROOT.TH1F("cutflow", "Cutflow;Cut Stage;Events", 4, 0, 4)
-# hist.GetXaxis().SetBinLabel(1, "Total Events")
-# hist.GetXaxis().SetBinLabel(2, "MET > 40")
-# hist.GetXaxis().SetBinLabel(3, "nLepton ≥ 3")
-# #hist.GetXaxis().SetBinLabel(4, "60 ≤ mass ≤ 120")
-
-# hist.SetBinContent(1, total_events)
-# hist.SetBinContent(2, events_met)
-# hist.SetBinContent(3, events_nlepton)
-# #hist.SetBinContent(4, events_mass)
-
-# # Draw and save histogram
-# canvas = ROOT.TCanvas("canvas", "Cutflow Histogram", 800, 600)
-# hist.Draw()
-# canvas.SaveAs("cutflow.png")  # Saves histogram as an image
-
-# # Keep the script interactive (if running in a Python script)
-# input("Press Enter to exit...")

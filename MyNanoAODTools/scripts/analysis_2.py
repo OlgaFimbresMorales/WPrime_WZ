@@ -42,6 +42,9 @@ class LeptonAnalysis(Module):
         self.out.branch("invariant_mass", "F")  # Define new branch
         self.out.branch("nLeptons", "F")
         self.out.branch("nev_passA","I")
+        self.out.branch("nev_passB","I")
+        self.out.branch("nev_passC","I")
+        self.out.branch("nev_passD","I")
         
         branches = ["Zmass", "Wmass", "Dr_Z", "Sum_pt", "Sum_mass", "nlep"]
         
@@ -96,13 +99,41 @@ class LeptonAnalysis(Module):
 
         if len(good_leptons) >= self.minLeptons: 
 
-            if len(good_electrons) >= 3:  # Canal A
+            if len(good_electrons) >= 3:  # Canal A  eee
 
                 self.out.fillBranch("nev_passA", 1) #number of leptons per event
                 
                 best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
                 self.out.fillBranch("A_Zmass", best_mass_Z)
                 return True
+
+
+            if len(good_electrons) >= 2 and len(good_muons)>=1:  # Canal B eemu
+
+                self.out.fillBranch("nev_passB", 1) #number of leptons per event
+                
+                best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
+                self.out.fillBranch("B_Zmass", best_mass_Z)
+                return True
+
+
+            if len(good_muons) >= 2 and len(good_electrons)>=1:  # Canal C   mumue
+
+                self.out.fillBranch("nev_passC", 1) #number of leptons per event
+                
+                best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
+                self.out.fillBranch("C_Zmass", best_mass_Z)
+                return True
+
+            if len(good_muons) >= 3:  # Canal D  mumumu
+
+                self.out.fillBranch("nev_passD", 1) #number of leptons per event
+                
+                best_pair, best_mass_Z = self.findBestZCandidate(good_leptons)
+                self.out.fillBranch("D_Zmass", best_mass_Z)
+                return True
+
+            
             
             return True
         return True      

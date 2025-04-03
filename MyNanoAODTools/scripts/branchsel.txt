@@ -32,6 +32,10 @@ keep B_Sum_mass
 keep C_Sum_mass
 keep D_Sum_mass
 keep nLeptons
+keep nev_passA
+keep nev_passB
+keep nev_passC
+keep nev_passD
 keep A_Lep1Z_pt
 keep A_Lep2Z_pt 
 keep A_Lep3W_pt
