@@ -183,32 +183,36 @@ class LeptonAnalysis(Module):
                 #if not best_pair:
                 #    return False  # No se encontro un par Z
 
-                lepton1, lepton2 = best_pair
-                lepton1_pt = lepton1.pt
-                lepton2_pt = lepton2.pt
+                if best_pair:
+                    lepton1, lepton2 = best_pair
+                    lepton1_pt = lepton1.pt
+                    lepton2_pt = lepton2.pt
                 
-                dr = self.dr_l1l2_Z(best_pair)
-                self.out.fillBranch("A_Dr_Z", dr)
-                self.out.fillBranch("A_Zmass", best_mass_Z)
+                    dr = self.dr_l1l2_Z(best_pair)
+                    self.out.fillBranch("A_Dr_Z", dr)
+                    self.out.fillBranch("A_Zmass", best_mass_Z)
 
-                leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
+                    leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
 
-                best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
+                    if len(leptons) >= 1:
+                        best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
                 
-                if best_lep:
-                    lepton3 = best_lep
-                    lepton3_pt = lepton3.pt
+                        if best_lep:
+                            lepton3 = best_lep
+                            lepton3_pt = lepton3.pt
                 
-
+                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                        
+                            self.out.fillBranch("A_Sum_mass", total_mass)
                 
                 #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
-                    total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                        
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
                 
                 #self.out.fillBranch("A_Wmass", best_mass_W)
-                    self.out.fillBranch("A_Sum_mass", total_mass)
+                        
                 
                 #self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
                 #self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
@@ -236,32 +240,34 @@ class LeptonAnalysis(Module):
                 #if not best_pair:
                 #    return False  # No se encontro un par Z
 
-                lepton1, lepton2 = best_pair
-                lepton1_pt = lepton1.pt
-                lepton2_pt = lepton2.pt
+                if best_pair:
+                    lepton1, lepton2 = best_pair
+                    lepton1_pt = lepton1.pt
+                    lepton2_pt = lepton2.pt
                 
-                dr = self.dr_l1l2_Z(best_pair)
-                self.out.fillBranch("B_Dr_Z", dr)
-                self.out.fillBranch("B_Zmass", best_mass_Z)
+                    dr = self.dr_l1l2_Z(best_pair)
+                    self.out.fillBranch("B_Dr_Z", dr)
+                    self.out.fillBranch("B_Zmass", best_mass_Z)
 
-                leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
+                    leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
 
-                best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
+                    if len(leptons) >= 1:
+                        best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
                 
-                if best_lep:
-                    lepton3 = best_lep
-                    lepton3_pt = lepton3.pt
+                        if best_lep:
+                            lepton3 = best_lep
+                            lepton3_pt = lepton3.pt
                 
 
                 
                 #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
-                    total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
                 
                 #self.out.fillBranch("A_Wmass", best_mass_W)
-                    self.out.fillBranch("B_Sum_mass", total_mass)
+                            self.out.fillBranch("B_Sum_mass", total_mass)
                 
                 #self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
                 #self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
@@ -281,33 +287,36 @@ class LeptonAnalysis(Module):
                 passed_in_channel = True
                 
                 self.cutflow["z_candidate_found_C"] += 1
-
+                
                 best_pair, best_mass_Z = self.findBestZCandidate(good_muons)
-                self.out.fillBranch("C_Zmass", best_mass_Z)
+                
                 #if not best_pair:
                 #    return False  # No se encontro un par Z
 
-                lepton1, lepton2 = best_pair
-                lepton1_pt = lepton1.pt
-                lepton2_pt = lepton2.pt
+                if best_pair:
+                    lepton1, lepton2 = best_pair
+                    lepton1_pt = lepton1.pt
+                    lepton2_pt = lepton2.pt
                 
-                dr = self.dr_l1l2_Z(best_pair)
-                self.out.fillBranch("C_Dr_Z", dr)
+                    dr = self.dr_l1l2_Z(best_pair)
+                    self.out.fillBranch("C_Dr_Z", dr)
+                    self.out.fillBranch("C_Zmass", best_mass_Z)
                 
 
-                leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
+                    leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
 
-                best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
+                    if len(leptons) >= 1:
+                        best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
                 
-                if best_lep:
-                    lepton3 = best_lep
-                    lepton3_pt = lepton3.pt
+                        if best_lep:
+                            lepton3 = best_lep
+                            lepton3_pt = lepton3.pt
                 
 
                 
                 #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
-                    total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
-                    self.out.fillBranch("C_Sum_mass", total_mass)
+                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                            self.out.fillBranch("C_Sum_mass", total_mass)
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
@@ -339,32 +348,34 @@ class LeptonAnalysis(Module):
                 #if not best_pair:
                 #    return False  # No se encontro un par Z
 
-                lepton1, lepton2 = best_pair
-                lepton1_pt = lepton1.pt
-                lepton2_pt = lepton2.pt
+                if best_pair:
+                    lepton1, lepton2 = best_pair
+                    lepton1_pt = lepton1.pt
+                    lepton2_pt = lepton2.pt
                 
-                dr = self.dr_l1l2_Z(best_pair)
-                self.out.fillBranch("D_Dr_Z", dr)
-                self.out.fillBranch("D_Zmass", best_mass_Z)
+                    dr = self.dr_l1l2_Z(best_pair)
+                    self.out.fillBranch("D_Dr_Z", dr)
+                    self.out.fillBranch("D_Zmass", best_mass_Z)
 
-                leptons = [lepton for lepton in good_muons if lepton != lepton1 and lepton != lepton2]
+                    leptons = [lepton for lepton in good_muons if lepton != lepton1 and lepton != lepton2]
 
-                best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
+                    if len(leptons) >= 1:
+                        best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
                 
-                if best_lep:
-                    lepton3 = best_lep
-                    lepton3_pt = lepton3.pt
+                        if best_lep:
+                            lepton3 = best_lep
+                            lepton3_pt = lepton3.pt
                 
 
                 
                 #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
-                    total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
                 
                 #self.out.fillBranch("A_Wmass", best_mass_W)
-                    self.out.fillBranch("D_Sum_mass", total_mass)
+                            self.out.fillBranch("D_Sum_mass", total_mass)
                 
                 #self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
                 #self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
@@ -440,37 +451,17 @@ class LeptonAnalysis(Module):
     
         for lepton in leptons:
             if abs(lepton.pdgId) == 11:  # Filtrar por electrones
-                if lepton.cutBased == 4 and lepton.pt >= 50:
+                if lepton.cutBased == 4 and lepton.pt >= 50 and met_pt > 40:
                     best_lep = lepton
                     found_count += 1  # Incrementar el contador si se encuentra un candidato
     
             if abs(lepton.pdgId) == 13:
-                if lepton.highPtId == 2 and lepton.pt >= 70:
+                if lepton.highPtId == 2 and lepton.pt >= 70 and met_pt > 40:
                     best_lep = lepton
                     
         if best_lep:
             return best_lep
 
-    
-    #    W_MASS = 80.4 #W boson mass in GeV
-    #    best_lep = None
-    #    min_diff = float("inf")
-    #    best_mass_W = float("inf")
-    #    
-    #    for lepton in leptons:
-    #        mass = self.WMass(lepton, met_pt, met_phi)
-    #        diff = abs(mass - W_MASS)
-    #        
-    #        if diff < min_diff:
-    #            min_diff = diff
-    #            best_mass_W = mass
-    #            best_lep = lepton
-    #            
-    #    if best_lep:
-    #        return best_lep, best_mass_W
-    #    else:
-    #        return None, 0.0
-        
            
     def dr_l1l2_Z(self, best_pair):
         dr_max = 1.5
