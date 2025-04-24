@@ -8,7 +8,8 @@ import itertools
 from array import array
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
-from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection, Object
+from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection 
+import subprocess
 
 
 class LeptonAnalysis(Module):
@@ -20,9 +21,9 @@ class LeptonAnalysis(Module):
 
     def beginJob(self):
         self.outputFile = ROOT.TFile(self.outputFile, "RECREATE")
-        self.histograms["electron_pt"] = ROOT.TH1F("electron_pt", "Electron pT; pT (GeV); Events", 50, 0, 200)
-        self.histograms["muon_pt"] = ROOT.TH1F("muon_pt", "Muon pT; pT (GeV); Events", 50, 0, 200)
-        self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
+        #self.histograms["electron_pt"] = ROOT.TH1F("electron_pt", "Electron pT; pT (GeV); Events", 50, 0, 200)
+        #self.histograms["muon_pt"] = ROOT.TH1F("muon_pt", "Muon pT; pT (GeV); Events", 50, 0, 200)
+        #self.histograms["invariant_mass"] = ROOT.TH1F("invariant_mass", "Invariant Mass of Leading Electrons; Mass (GeV); Events", 50, 0, 200)
         
         self.cutflow = {
             "total_events": 0,
@@ -139,15 +140,7 @@ class LeptonAnalysis(Module):
         met_phi = event.MET_phi
         
         
-        
-        
-        #-------------------------MET
-        
-        #MET_pt_threshold = 40
-        #if met_pt < MET_pt_threshold:
-        #    return False
-        
-        #-----------------
+       
         
         #---------------ELECTRONES
         
@@ -174,6 +167,7 @@ class LeptonAnalysis(Module):
             if len(good_electrons) >= 3:  # Asegurate de que hay al menos 3 electrones
             
                 self.out.fillBranch("nev_passA", 1)
+                self.out.fillBranch("A_nlep", len(good_electrons))
                 
                 passed_in_channel = True
                 
@@ -191,8 +185,10 @@ class LeptonAnalysis(Module):
                     dr = self.dr_l1l2_Z(best_pair)
                     self.out.fillBranch("A_Dr_Z", dr)
                     self.out.fillBranch("A_Zmass", best_mass_Z)
+                    self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
+                    self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
 
-                    leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
+                    leptons = [lepton for lepton in good_electrons if lepton != lepton1 and lepton != lepton2]
 
                     if len(leptons) >= 1:
                         best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
@@ -200,12 +196,20 @@ class LeptonAnalysis(Module):
                         if best_lep:
                             lepton3 = best_lep
                             lepton3_pt = lepton3.pt
+                            
+                            W_mass = self.WMass(lepton3, met_pt, met_phi)
+                            self.out.fillBranch("A_Wmass", W_mass)
                 
                             total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
-                        
                             self.out.fillBranch("A_Sum_mass", total_mass)
+                            self.out.fillBranch("A_Lep3W_pt", lepton3_pt)
+                            
+                            total_pt = lepton1_pt + lepton2_pt + lepton3_pt
+                            self.out.fillBranch("A_Sum_pt", total_pt)
                 
-                #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
+                
+                
+                
                         
                 #nlep = len(good_leptons)
 
@@ -217,7 +221,7 @@ class LeptonAnalysis(Module):
                 #self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
                 #self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
                 #self.out.fillBranch("A_Lep3W_pt", lepton3_pt)
-                #self.out.fillBranch("A_Sum_pt", total_pt)
+                
                 #self.out.fillBranch("A_nlep", nlep)
 
                 #self.cutflow["final_events_A"] += 1
@@ -231,6 +235,7 @@ class LeptonAnalysis(Module):
             if len(good_electrons) >= 2 and len(good_muons) >= 1:  # Asegurate de que hay al menos 2 electrones y 1 muon
             
                 self.out.fillBranch("nev_passB", 1)
+                self.out.fillBranch("B_nlep", len(good_electrons) + len(good_muons))
                 
                 passed_in_channel = True
                 
@@ -248,8 +253,10 @@ class LeptonAnalysis(Module):
                     dr = self.dr_l1l2_Z(best_pair)
                     self.out.fillBranch("B_Dr_Z", dr)
                     self.out.fillBranch("B_Zmass", best_mass_Z)
+                    self.out.fillBranch("B_Lep1Z_pt", lepton1_pt)
+                    self.out.fillBranch("B_Lep2Z_pt", lepton2_pt)
 
-                    leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
+                    leptons = [lepton for lepton in good_muons if lepton != lepton1 and lepton != lepton2]
 
                     if len(leptons) >= 1:
                         best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
@@ -257,17 +264,25 @@ class LeptonAnalysis(Module):
                         if best_lep:
                             lepton3 = best_lep
                             lepton3_pt = lepton3.pt
+                            
+                            W_mass = self.WMass(lepton3, met_pt, met_phi)
+                            self.out.fillBranch("B_Wmass", W_mass)
+                            
+                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                            self.out.fillBranch("B_Sum_mass", total_mass)
+                            self.out.fillBranch("B_Lep3W_pt", lepton3_pt)
+                            
+                            total_pt = lepton1_pt + lepton2_pt + lepton3_pt
+                            self.out.fillBranch("B_Sum_pt", total_pt)
                 
 
                 
                 #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
-                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                            
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
                 
-                #self.out.fillBranch("A_Wmass", best_mass_W)
-                            self.out.fillBranch("B_Sum_mass", total_mass)
                 
                 #self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
                 #self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
@@ -283,6 +298,7 @@ class LeptonAnalysis(Module):
             if len(good_muons) >= 2 and len(good_electrons) >= 1:
                 
                 self.out.fillBranch("nev_passC", 1)
+                self.out.fillBranch("C_nlep", len(good_electrons) + len(good_muons))
                 
                 passed_in_channel = True
                 
@@ -301,9 +317,11 @@ class LeptonAnalysis(Module):
                     dr = self.dr_l1l2_Z(best_pair)
                     self.out.fillBranch("C_Dr_Z", dr)
                     self.out.fillBranch("C_Zmass", best_mass_Z)
+                    self.out.fillBranch("C_Lep1Z_pt", lepton1_pt)
+                    self.out.fillBranch("C_Lep2Z_pt", lepton2_pt)
                 
 
-                    leptons = [lepton for lepton in good_leptons if lepton != lepton1 and lepton != lepton2]
+                    leptons = [lepton for lepton in good_electrons if lepton != lepton1 and lepton != lepton2]
 
                     if len(leptons) >= 1:
                         best_lep = self.findBestWCandidate(leptons, met_pt, met_phi)
@@ -311,12 +329,21 @@ class LeptonAnalysis(Module):
                         if best_lep:
                             lepton3 = best_lep
                             lepton3_pt = lepton3.pt
+                            
+                            W_mass = self.WMass(lepton3, met_pt, met_phi)
+                            self.out.fillBranch("C_Wmass", W_mass)
+                            
+                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                            self.out.fillBranch("C_Sum_mass", total_mass)
+                            self.out.fillBranch("C_Lep3W_pt", lepton3_pt)
+                            
+                            total_pt = lepton1_pt + lepton2_pt + lepton3_pt
+                            self.out.fillBranch("C_Sum_pt", total_pt)
                 
 
                 
                 #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
-                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
-                            self.out.fillBranch("C_Sum_mass", total_mass)
+                            
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
@@ -339,6 +366,7 @@ class LeptonAnalysis(Module):
             if len(good_muons) >= 3:
             
                 self.out.fillBranch("nev_passD", 1)
+                self.out.fillBranch("B_nlep", len(good_muons))
                 
                 passed_in_channel = True
                 
@@ -356,6 +384,8 @@ class LeptonAnalysis(Module):
                     dr = self.dr_l1l2_Z(best_pair)
                     self.out.fillBranch("D_Dr_Z", dr)
                     self.out.fillBranch("D_Zmass", best_mass_Z)
+                    self.out.fillBranch("D_Lep1Z_pt", lepton1_pt)
+                    self.out.fillBranch("D_Lep2Z_pt", lepton2_pt)
 
                     leptons = [lepton for lepton in good_muons if lepton != lepton1 and lepton != lepton2]
 
@@ -365,17 +395,24 @@ class LeptonAnalysis(Module):
                         if best_lep:
                             lepton3 = best_lep
                             lepton3_pt = lepton3.pt
+                            
+                            W_mass = self.WMass(lepton3, met_pt, met_phi)
+                            self.out.fillBranch("D_Wmass", W_mass)
+                            
+                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+                            self.out.fillBranch("D_Sum_mass", total_mass)
+                            self.out.fillBranch("D_Lep3W_pt", lepton3_pt)
+                            
+                            total_pt = lepton1_pt + lepton2_pt + lepton3_pt
+                            self.out.fillBranch("D_Sum_pt", total_pt)
                 
 
                 
-                #total_pt = lepton1_pt + lepton2_pt + lepton3_pt
-                            total_mass = self.Total_Mass(lepton1, lepton2, lepton3)
+               
                 #nlep = len(good_leptons)
 
                 # Almacenar las ramas para el canal A
                 
-                #self.out.fillBranch("A_Wmass", best_mass_W)
-                            self.out.fillBranch("D_Sum_mass", total_mass)
                 
                 #self.out.fillBranch("A_Lep1Z_pt", lepton1_pt)
                 #self.out.fillBranch("A_Lep2Z_pt", lepton2_pt)
@@ -523,7 +560,7 @@ outputDir  = f"filteredNanoAOD/{outfolder}/{process}"  # Corrected
 os.makedirs(outputDir, exist_ok=True)
 
 # Use Condor job IDs for unique histogram filenames
-histOutputFile = os.path.join(outputDir, f"histograms_{process}.root")
+#histOutputFile = os.path.join(outputDir, f"histograms_{process}.root")
 branchSelFile = "branchsel.txt"
 
 
@@ -532,7 +569,7 @@ p = PostProcessor(
     cut=None,
     branchsel=branchSelFile,  # Keeps only selected branches
     outputbranchsel=None,  # Ensures all new branches are included
-    modules=[LeptonAnalysis(histOutputFile)],
+    modules=[LeptonAnalysis()],
     noOut=False,
     justcount=False
 )
@@ -540,4 +577,5 @@ p = PostProcessor(
 p.run()
 
 
-
+# Llamar al script del cutflow y pasarle la ruta como argumento
+subprocess.run(["python3", "cutflow.py", output_dir])
